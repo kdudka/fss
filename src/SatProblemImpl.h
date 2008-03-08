@@ -4,7 +4,7 @@
 #include <string>
 #include "SatSolver.h"
 
-namespace SatSolver {
+namespace FastSatSolver {
 
   enum EToken {
   };
@@ -214,7 +214,7 @@ namespace SatSolver {
 
   };
 
-} // namespace SatSolver
+} // namespace FastSatSolver
 
 
 #endif // SATPROBLEMIMPL_H

@@ -2,7 +2,7 @@
 
 using std::string;
 
-namespace SatSolver {
+namespace FastSatSolver {
 
   /**
    * @return SatProblem*
@@ -189,5 +189,4 @@ namespace SatSolver {
   }
 
 
-} // SatSolver
-
+} // namespace FastSatSolver

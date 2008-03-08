@@ -3,7 +3,7 @@
 
 #include <string>
 
-namespace SatSolver {
+namespace FastSatSolver {
 
   class ISatItem
   {
@@ -143,7 +143,7 @@ namespace SatSolver {
   {
   };
 
-} // namespace SatSolver
+} // namespace FastSatSolver
 
 
 #endif // SATSOLVER_H

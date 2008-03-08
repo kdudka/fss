@@ -3,7 +3,7 @@
 
 #include "SatSolver.h"
 
-namespace SatSolver {
+namespace FastSatSolver {
 
   class SatItem : public ISatItem
   {
@@ -19,7 +19,7 @@ namespace SatSolver {
       virtual bool getBit (int index );
   };
 
-} // namespace SatSolver
+} // namespace FastSatSolver
 
 
 #endif // SATSOLVERIMPL_H

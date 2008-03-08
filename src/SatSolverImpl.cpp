@@ -1,6 +1,6 @@
 #include "SatSolverImpl.h"
 
-namespace SatSolver {
+namespace FastSatSolver {
 
   /**
   */
@@ -61,4 +61,5 @@ namespace SatSolver {
 
   }
 
-} // SatSolver
+} // namespace FastSatSolver
+
