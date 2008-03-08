@@ -3,13 +3,23 @@
 
 #include "SatSolver.h"
 
-namespace SatSovler {
+namespace SatSolver {
 
   class SatItem : public ISatItem
   {
+      /**
+       * @return int
+       */
+      virtual int getLength ( );
+
+      /**
+       * @return bool
+       * @param  index
+       */
+      virtual bool getBit (int index );
   };
 
-} // namespace SatSovler
+} // namespace SatSolver
 
 
 #endif // SATSOLVERIMPL_H

@@ -3,7 +3,7 @@
 
 #include <string>
 
-namespace SatSovler {
+namespace SatSolver {
 
   class ISatItem
   {
@@ -66,10 +66,10 @@ namespace SatSovler {
   };
 
 
-  class ISatProblemSolver
+  class ISatSolver
   {
     public:
-      virtual ~ISatProblemSolver() { }
+      virtual ~ISatSolver() { }
 
       /**
       */
@@ -94,14 +94,14 @@ namespace SatSovler {
       virtual void notify ( ) = 0;
   };
 
-  class SatProblemSolver : public ISatProblemSolver
+  class SatSolver : public ISatSolver
   {
     public:
       /**
        * @return SatProblemSolver*
        * @param  problem
        */
-      static SatProblemSolver* create (SatProblem* problem );
+      static SatSolver* create (SatProblem* problem );
 
       /**
       */
@@ -124,7 +124,7 @@ namespace SatSovler {
       /**
        * @param  problem
        */
-      SatProblemSolver (SatProblem* problem );
+      SatSolver (SatProblem* problem );
   };
 
   class StepsCountStopHandler : public IEventListener
@@ -143,7 +143,7 @@ namespace SatSovler {
   {
   };
 
-} // namespace SatSovler
+} // namespace SatSolver
 
 
 #endif // SATSOLVER_H

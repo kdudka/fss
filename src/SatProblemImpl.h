@@ -4,7 +4,7 @@
 #include <string>
 #include "SatSolver.h"
 
-namespace SatSovler {
+namespace SatSolver {
 
   enum EToken {
   };
@@ -86,6 +86,12 @@ namespace SatSovler {
        * @param  fd
        */
       RawScanner (FILE* fd );
+
+      /**
+       * @return int
+       * @param  token
+       */
+      virtual int readNext (Token* token );
   };
 
 
@@ -119,6 +125,12 @@ namespace SatSovler {
        * @param  vc
        */
       ScannerStringHandler (IScanner *scanner, VariableContainer *vc );
+
+      /**
+       * @return int
+       * @param  token
+       */
+      virtual int readNext (Token* token );
   };
 
 
@@ -157,14 +169,52 @@ namespace SatSovler {
        * @param  fc
        */
       ScannerFormulaHandler (IScanner *scanner, FormulaContainer *fc );
+
+      /**
+       * @return int
+       * @param  token
+       */
+      virtual int readNext (Token* token );
   };
 
 
   class SatProblemImpl : public SatProblem
   {
+    public:
+      /**
+       * @param  fileName
+       */
+      virtual void loadFromFile (std::string fileName );
+
+      /**
+      */
+      virtual void loadFromInput ( );
+
+      /**
+       * @return int
+       */
+      virtual int getVarsCount ( );
+
+      /**
+       * @return std::string
+       * @param  index
+       */
+      virtual std::string getVarName (int index );
+
+      /**
+       * @return int
+       * @param  data
+       */
+      virtual int getSatsCount (ISatItem *data);
+
+      /**
+       * @return bool
+       */
+      virtual bool hasError ( );
+
   };
 
-} // namespace SatSovler
+} // namespace SatSolver
 
 
 #endif // SATPROBLEMIMPL_H
