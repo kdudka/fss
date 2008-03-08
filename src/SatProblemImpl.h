@@ -21,6 +21,7 @@ namespace FastSatSolver {
     T_RPAR,
     T_DELIM,
     T_STRING,
+    T_VARIABLE,
     T_ERR_LEX = -1,
     T_ERR_PARSE = -2
   };
@@ -168,6 +169,8 @@ namespace FastSatSolver {
     private:
       IScanner *scanner_;
       VariableContainer *vc_;
+      typedef std::map<std::string,EToken> TKeyWordMap;
+      TKeyWordMap keyWordMap_;
   };
 
 

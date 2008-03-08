@@ -27,8 +27,10 @@ namespace FastSatSolver {
     }
     stream << std::endl;
     std::cerr << "       At line: " << token.m_line  << std::endl;
-    std::cerr << "    Extra text: " << token.m_ext_text << std::endl;
-    std::cerr << "  Extra nubmer: " << token.m_ext_number << std::endl;
+    if (T_VARIABLE == token.m_token) {
+      std::cerr << " Variable name: " << token.m_ext_text << std::endl;
+      std::cerr << "   Vairable id: " << token.m_ext_number << std::endl;
+    }
     return stream;
   }
 #endif // NDEBUG
@@ -191,7 +193,7 @@ namespace FastSatSolver {
     // Add new variable
     nameToIndex_[name] = currentIndex_;
     indexToName_.push_back(name);
-    currentIndex_++;
+    return currentIndex_++;
   }
 
 
@@ -334,6 +336,13 @@ namespace FastSatSolver {
     scanner_(scanner),
     vc_(vc)
   {
+    // Keywords definition
+    keyWordMap_["NOT"]   = T_NOT;
+    keyWordMap_["AND"]   = T_AND;
+    keyWordMap_["OR"]    = T_OR;
+    keyWordMap_["XOR"]   = T_XOR;
+    keyWordMap_["FALSE"] = T_FALSE;
+    keyWordMap_["TRUE"]  = T_TRUE;
   }
 
   /**
@@ -341,8 +350,29 @@ namespace FastSatSolver {
    * @param  token
    */
   int ScannerStringHandler::readNext (Token* token ) {
+    // Use RawScanner to read token
     scanner_->readNext(token);
-    return 0;
+
+    // Transformations
+    switch (token->m_token) {
+      case T_STRING:
+        // Handle only T_STRING
+        {
+          string &text = token->m_ext_text;
+          if (keyWordMap_.end() != keyWordMap_.find(text)) {
+            // Map T_STRING to keywords
+            token->m_token = keyWordMap_[text];
+            return 0;
+          }
+
+          // Use string as variable name
+          token->m_token = T_VARIABLE;
+          token->m_ext_number = vc_->addVariable(text);
+        }
+      default:
+        // Default behavior
+        return 0;
+    }
   }
 
 
