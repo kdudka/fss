@@ -5,6 +5,20 @@
 
 namespace FastSatSolver {
 
+  class GenericException {
+    public:
+      GenericException(std::string text) {
+        this->text_ = text;
+      }
+
+      std::string getText() {
+        return this->text_;
+      }
+
+    private:
+      std::string text_;
+  };
+
   class ISatItem
   {
     public:

@@ -2,19 +2,35 @@
 #define SATPROBLEMIMPL_H
 
 #include <string>
+#include <vector>
+#include <list>
+#include <map>
 #include "SatSolver.h"
 
 namespace FastSatSolver {
 
   enum EToken {
+    T_EOF,
+    T_FALSE,
+    T_TRUE,
+    T_NOT,
+    T_AND,
+    T_OR,
+    T_XOR,
+    T_LPAR,
+    T_RPAR,
+    T_DELIM,
+    T_STRING,
+    T_ERR_LEX = -1,
+    T_ERR_PARSE = -2
   };
 
 
-  struct Token
-  {
-      EToken        m_token;
-      int           m_number;
-      std::string   m_text;
+  struct Token {
+    int           m_line;
+    EToken        m_token;
+    int           m_ext_number;
+    std::string   m_ext_text;
   };
 
 
@@ -54,7 +70,7 @@ namespace FastSatSolver {
       /**
        * @param  data
        */
-      virtual void eval (ISatItem *data ) = 0;
+      virtual bool eval (ISatItem *data ) = 0;
   };
 
 
@@ -75,7 +91,7 @@ namespace FastSatSolver {
        * @param  data
        */
 
-      void eval (ISatItem *data );
+      bool eval (ISatItem *data );
   };
 
 
@@ -92,6 +108,15 @@ namespace FastSatSolver {
        * @param  token
        */
       virtual int readNext (Token* token );
+
+    private:
+      FILE *fd_;
+      enum EState {
+        STATE_INIT,
+        STATE_BUILDING_STRING
+      };
+      EState state_;
+      int line_;
   };
 
 
@@ -114,6 +139,14 @@ namespace FastSatSolver {
        * @param  name
        */
       int addVariable (std::string name );
+
+    private:
+      typedef std::string TVarName;
+      typedef std::vector<TVarName> TIndexToName;
+      typedef std::map<TVarName, int> TNameToIndex;
+      TIndexToName indexToName_;
+      TNameToIndex nameToIndex_;
+      int currentIndex_;
   };
 
 
@@ -131,6 +164,10 @@ namespace FastSatSolver {
        * @param  token
        */
       virtual int readNext (Token* token );
+
+    private:
+      IScanner *scanner_;
+      VariableContainer *vc_;
   };
 
 
@@ -144,8 +181,8 @@ namespace FastSatSolver {
 
       /**
        * @param  index
-       */
-      void getItem (int index );
+       *
+      void getItem (int index );*/
 
       /**
        * @return int
@@ -157,6 +194,10 @@ namespace FastSatSolver {
        * @param  formula
        */
       void addFormula (IFormulaEvaluator *formula );
+
+    private:
+      typedef std::list<IFormulaEvaluator *> TContainer;
+      TContainer container_;
   };
 
 
@@ -175,12 +216,18 @@ namespace FastSatSolver {
        * @param  token
        */
       virtual int readNext (Token* token );
+
+    private:
+      IScanner *scanner_;
+      FormulaContainer *fc_;
   };
 
 
   class SatProblemImpl : public SatProblem
   {
     public:
+      SatProblemImpl();
+
       /**
        * @param  fileName
        */
@@ -212,6 +259,14 @@ namespace FastSatSolver {
        */
       virtual bool hasError ( );
 
+    private:
+      bool                hasError_;
+      VariableContainer   vc_;
+      FormulaContainer    fc_;
+
+    private:
+      void parseFile(FILE *);
+      void parserLoop(IScanner *);
   };
 
 } // namespace FastSatSolver

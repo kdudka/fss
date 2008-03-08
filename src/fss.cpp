@@ -1,7 +1,9 @@
+#include <iostream>
 #include "SatSolver.h"
 
 using FastSatSolver::SatSolver;
 using FastSatSolver::SatProblem;
+using FastSatSolver::GenericException;
 
 // RAII object
 class SatProblemWrapper {
@@ -36,14 +38,23 @@ class SatSolverWrapper {
 };
 
 int main(int argc, char *argv[]) {
+  try {
   SatProblemWrapper sp;
 
+  std::cerr << "SatProblem::loadFromInput()...\n";
+  //sp.instance()->loadFromFile(argv[1]);
   sp.instance()->loadFromInput();
   if (sp.instance()->hasError())
-    return 1;
+    throw GenericException("Unhandled error in main()");
 
+  std::cerr << "SatSolver::create(...)\n";
   SatSolverWrapper(sp.instance());
 
   return 0;
+  }
+  catch (GenericException e) {
+    std::cerr << "fss: " << e.getText() << std::endl;
+    return 1;
+  }
 }
 
