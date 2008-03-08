@@ -23,7 +23,8 @@ namespace FastSatSolver {
     T_STRING,
     T_VARIABLE,
     T_ERR_LEX = -1,
-    T_ERR_PARSE = -2
+    T_ERR_EXPR = -2,
+    T_ERR_PARSE = -3
   };
 
 
@@ -55,7 +56,7 @@ namespace FastSatSolver {
       /**
        * @param  token
        */
-      virtual void parse (Token token ) = 0;
+      virtual int parse (Token token ) = 0;
 
       /**
        * @return bool
@@ -81,7 +82,7 @@ namespace FastSatSolver {
       /**
        * @param  token
        */
-      void parse (Token token );
+      int parse (Token token );
 
       /**
        * @return bool
@@ -207,6 +208,7 @@ namespace FastSatSolver {
   class ScannerFormulaHandler : public IScanner
   {
     public:
+      virtual ~ScannerFormulaHandler();
 
       /**
        * @param  scanner
@@ -223,6 +225,8 @@ namespace FastSatSolver {
     private:
       IScanner *scanner_;
       FormulaContainer *fc_;
+      Formula *current_;
+      bool ignoreToDelim_;
   };
 
 
@@ -266,10 +270,12 @@ namespace FastSatSolver {
       bool                hasError_;
       VariableContainer   vc_;
       FormulaContainer    fc_;
+      std::string         fileName_;
 
     private:
       void parseFile(FILE *);
       void parserLoop(IScanner *);
+      void printError(Token);
   };
 
 } // namespace FastSatSolver

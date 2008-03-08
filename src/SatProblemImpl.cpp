@@ -22,14 +22,17 @@ namespace FastSatSolver {
       case T_RPAR:      stream << "T_RPAR";       break;
       case T_DELIM:     stream << "T_DELIM";      break;
       case T_STRING:    stream << "T_STRING";     break;
+      case T_VARIABLE:  stream << "T_VARIABLE";   break;
       case T_ERR_LEX:   stream << "T_ERR_LEX";    break;
+      case T_ERR_EXPR:  stream << "T_ERR_EXPR";   break;
       case T_ERR_PARSE: stream << "T_ERR_PARSE";  break;
+      default:          stream << token.m_token;  break;
     }
     stream << std::endl;
-    std::cerr << "       At line: " << token.m_line  << std::endl;
+    stream << "       At line: " << token.m_line  << std::endl;
     if (T_VARIABLE == token.m_token) {
-      std::cerr << " Variable name: " << token.m_ext_text << std::endl;
-      std::cerr << "   Vairable id: " << token.m_ext_number << std::endl;
+      stream << " Variable name: " << token.m_ext_text << std::endl;
+      stream << "   Vairable id: " << token.m_ext_number << std::endl;
     }
     return stream;
   }
@@ -51,6 +54,8 @@ namespace FastSatSolver {
    * @param  fileName
    */
   void SatProblemImpl::loadFromFile (string fileName ) {
+    fileName_ = fileName;
+
     // OpenedFile RAII
     class OpenedFileRAII {
       public:
@@ -73,6 +78,7 @@ namespace FastSatSolver {
   /**
   */
   void SatProblemImpl::loadFromInput ( ) {
+    fileName_ = "-";
     this->parseFile(stdin);
   }
 
@@ -120,14 +126,34 @@ namespace FastSatSolver {
   // @private
   void SatProblemImpl::parserLoop(IScanner *scanner) {
     Token token;
-    while (0== scanner->readNext(&token)) {
+    while (0== scanner->readNext(&token) && T_EOF!=token.m_token) {
       switch (token.m_token) {
+        case T_ERR_LEX:
+        case T_ERR_EXPR:
+        case T_ERR_PARSE:
+          this->printError(token);
+          break;
+
         default:
-          // TODO
-          ;
+          throw GenericException("Unhandled token in SatProblemImp::parserLoop");
       }
     }
   }
+
+
+  // @private
+  void SatProblemImpl::printError(Token token) {
+    std::cerr << fileName_ << ":" << token.m_line << ": error: ";
+    switch (token.m_token) {
+      case T_ERR_LEX:   std::cerr << "lexical error";     break;
+      case T_ERR_EXPR:  std::cerr << "expression error";  break;
+      case T_ERR_PARSE: std::cerr << "syntax error";      break;
+      default:
+          throw GenericException("Unhandled error in SatProblemImp::printError");
+    }
+    std::cerr << std::endl;
+  }
+
 
   /**
    * @return int
@@ -200,8 +226,10 @@ namespace FastSatSolver {
   /**
    * @param  token
    */
-  void Formula::parse (Token token ) {
-    // TODO
+  int Formula::parse (Token token ) {
+#ifndef NDEBUG
+          std::cerr << token << std::endl;
+#endif // NDEBUG
   }
 
   /**
@@ -382,8 +410,15 @@ namespace FastSatSolver {
    */
   ScannerFormulaHandler::ScannerFormulaHandler (IScanner *scanner, FormulaContainer *fc ):
     scanner_(scanner),
-    fc_(fc)
+    fc_(fc),
+    ignoreToDelim_(false)
   {
+    current_ = new Formula;
+  }
+
+
+  ScannerFormulaHandler::~ScannerFormulaHandler() {
+    delete current_;
   }
 
   /**
@@ -391,11 +426,63 @@ namespace FastSatSolver {
    * @param  token
    */
   int ScannerFormulaHandler::readNext (Token* token ) {
-    scanner_->readNext(token);
-#ifndef NDEBUG
-    std::cerr << *token << std::endl;
-#endif // NDEBUG
-    return 0;
+    // Use ScannerStringHandler to read token
+    while (0== scanner_->readNext(token)) {
+      switch (token->m_token) {
+        case T_FALSE:
+        case T_TRUE:
+        case T_NOT:
+        case T_AND:
+        case T_OR:
+        case T_XOR:
+        case T_LPAR:
+        case T_RPAR:
+        case T_VARIABLE:
+          if (ignoreToDelim_)
+            // Ignore token
+            break;
+
+          // Parse token by IFormulaBuilder
+          if (0!= current_->parse(*token)) {
+            // Expression error
+            ignoreToDelim_ = true;
+            token->m_token = T_ERR_EXPR;
+            return 0;
+          }
+          break;
+
+        case T_ERR_LEX:
+          // Lexical error
+          if (ignoreToDelim_)
+            // Ignore error
+            break;
+          ignoreToDelim_ = true;
+          return 0;
+
+        case T_EOF:
+        case T_DELIM:
+          if (!ignoreToDelim_ && current_->isValid()) {
+            // Formula successfully readed
+            fc_->addFormula(current_);
+            current_ = new Formula;
+            if (T_DELIM==token->m_token)
+              break;
+            else
+              return 0;
+          }
+          if (!ignoreToDelim_) {
+            // Parse error
+            token->m_token = T_ERR_PARSE;
+            return 0;
+          }
+          // Revitalization
+          ignoreToDelim_ = false;
+          break;
+
+        default:
+          return 0;
+      }
+    }
   }
 
 
