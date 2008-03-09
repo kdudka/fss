@@ -45,10 +45,10 @@ int main(int argc, char *argv[]) {
   //sp.instance()->loadFromFile(argv[1]);
   sp.instance()->loadFromInput();
   if (sp.instance()->hasError())
-    throw GenericException("Unhandled error in main()");
+    throw GenericException("SatProblem::hasError() returned true)");
 
-  /*std::cerr << "SatSolver::create(...)\n";
-  SatSolverWrapper(sp.instance());*/
+  std::cerr << "SatSolver::create(...)\n";
+  SatSolverWrapper solver(sp.instance());
 
   return 0;
   }

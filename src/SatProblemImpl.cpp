@@ -113,6 +113,7 @@ namespace FastSatSolver {
 
   // @private
   void SatProblemImpl::printError(Token token) {
+    this->hasError_ = true;
     std::cerr << fileName_ << ":" << token.m_line << ": error: ";
     switch (token.m_token) {
       case T_ERR_LEX:   std::cerr << "lexical error";     break;
@@ -139,6 +140,14 @@ namespace FastSatSolver {
    */
   string SatProblemImpl::getVarName (int index ) {
     return vc_.getVarName(index);
+  }
+
+
+  /**
+   * @return
+   */
+  int SatProblemImpl::getFormulasCount() {
+    return fc_.getLength();
   }
 
 
@@ -203,7 +212,7 @@ namespace FastSatSolver {
   /**
    * @return int
    */
-  int FormulaContainer::getlength ( ) {
+  int FormulaContainer::getLength ( ) {
     return container_.size();
   }
 

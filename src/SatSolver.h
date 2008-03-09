@@ -68,6 +68,11 @@ namespace FastSatSolver {
       virtual std::string getVarName (int index ) = 0;
 
       /**
+       * @return
+       */
+      virtual int getFormulasCount() = 0;
+
+      /**
        * @return int
        * @param  data
        */

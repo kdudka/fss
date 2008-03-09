@@ -223,7 +223,7 @@ namespace FastSatSolver {
       /**
        * @return int
        */
-      int getlength ( );
+      int getLength ( );
 
       /**
        * @param  index
@@ -296,6 +296,11 @@ namespace FastSatSolver {
        * @param  index
        */
       virtual std::string getVarName (int index );
+
+      /**
+       * @return
+       */
+      virtual int getFormulasCount();
 
       /**
        * @return int

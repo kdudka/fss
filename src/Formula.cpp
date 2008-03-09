@@ -161,7 +161,7 @@ namespace FastSatSolver {
   class CmdBinary: public Cmd {
     public:
       CmdBinary(EToken e): et(e) { }
-      virtual void execute(TRuntimeStack *stack, ISatItem *data) {
+      virtual void execute(TRuntimeStack *stack, ISatItem *) {
         assert(!stack->empty());
         bool a = stack->top();
         assert(!stack->empty());
@@ -229,7 +229,6 @@ namespace FastSatSolver {
   struct Formula::Private {
     ParserStack     parserStack;
     bool            errorDetected;
-    TRuntimeStack   runtimeStack;
     CmdList         cmdList;
   };
 
@@ -402,8 +401,16 @@ namespace FastSatSolver {
   /**
    * @param  data
    */
-  bool Formula::eval (ISatItem *data ) {
-    // TODO
+  bool Formula::eval (ISatItem *data) {
+    if (!this->isValid())
+      throw GenericException("Formula::eval(): called for invalid formula");
+
+    TRuntimeStack stack;
+    d->cmdList.execute(&stack, data);
+    if (1!=stack.size())
+      throw GenericException("Formula::eval(): incorrect stack size after cmdList.execute()");
+
+    return stack.top();
   }
 
 
