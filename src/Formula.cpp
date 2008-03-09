@@ -64,6 +64,9 @@ namespace FastSatSolver {
   };
 
   struct Formula::Private {
+    static const TABLE_SIZE = 7;
+    static const EToken[TABLE_SIZE][TABLE_SIZE] = {
+    };
     ParserStack parserStack;
     bool errorDetected;
   };
