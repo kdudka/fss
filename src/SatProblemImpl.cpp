@@ -2,41 +2,11 @@
 #include <assert.h>
 #include <iostream>
 #include "SatProblemImpl.h"
+#include "Formula.h"
 
 using std::string;
 
 namespace FastSatSolver {
-
-#ifndef NDEBUG
-  std::ostream& operator<< (std::ostream &stream, Token token) {
-    stream << "Token: ";
-    switch (token.m_token) {
-      case T_EOF:       stream << "T_EOF";        break;
-      case T_FALSE:     stream << "T_FALSE";      break;
-      case T_TRUE:      stream << "T_TRUE";       break;
-      case T_NOT:       stream << "T_NOT";        break;
-      case T_AND:       stream << "T_AND";        break;
-      case T_OR:        stream << "T_OR";         break;
-      case T_XOR:       stream << "T_XOR";        break;
-      case T_LPAR:      stream << "T_LPAR";       break;
-      case T_RPAR:      stream << "T_RPAR";       break;
-      case T_DELIM:     stream << "T_DELIM";      break;
-      case T_STRING:    stream << "T_STRING";     break;
-      case T_VARIABLE:  stream << "T_VARIABLE";   break;
-      case T_ERR_LEX:   stream << "T_ERR_LEX";    break;
-      case T_ERR_EXPR:  stream << "T_ERR_EXPR";   break;
-      case T_ERR_PARSE: stream << "T_ERR_PARSE";  break;
-      default:          stream << token.m_token;  break;
-    }
-    stream << std::endl;
-    stream << "       At line: " << token.m_line  << std::endl;
-    if (T_VARIABLE == token.m_token) {
-      stream << " Variable name: " << token.m_ext_text << std::endl;
-      stream << "   Vairable id: " << token.m_ext_number << std::endl;
-    }
-    return stream;
-  }
-#endif // NDEBUG
 
   /**
    * @return SatProblem*
@@ -222,29 +192,6 @@ namespace FastSatSolver {
     return currentIndex_++;
   }
 
-
-  /**
-   * @param  token
-   */
-  int Formula::parse (Token token ) {
-#ifndef NDEBUG
-          std::cerr << token << std::endl;
-#endif // NDEBUG
-  }
-
-  /**
-   * @return bool
-   */
-  bool Formula::isValid ( ) {
-    // TODO
-  }
-
-  /**
-   * @param  data
-   */
-  bool Formula::eval (ISatItem *data ) {
-    // TODO
-  }
 
   /**
    * @return int
