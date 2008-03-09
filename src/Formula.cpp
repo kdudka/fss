@@ -11,10 +11,10 @@ namespace FastSatSolver {
   static const EToken table[TABLE_SIZE][TABLE_SIZE] = {
     /*            0             1             2             3             4             5             6             7             */
     /*            XOR           OR            AND           NOT           (             )             i             $             */
-    /* 0 XOR */ { T_PARSER_GT,  T_PARSER_GT,  T_PARSER_GT,  T_EOF      ,  T_PARSER_LT,  T_PARSER_GT,  T_PARSER_LT,  T_PARSER_GT,  },
-    /* 1 OR  */ { T_PARSER_GT,  T_PARSER_GT,  T_PARSER_GT,  T_EOF      ,  T_PARSER_LT,  T_PARSER_GT,  T_PARSER_LT,  T_PARSER_GT,  },
-    /* 2 AND */ { T_PARSER_GT,  T_PARSER_GT,  T_PARSER_GT,  T_EOF      ,  T_PARSER_LT,  T_PARSER_GT,  T_PARSER_LT,  T_PARSER_GT,  },
-    /* 3 NOT */ { T_EOF      ,  T_EOF      ,  T_EOF      ,  T_EOF      ,  T_PARSER_LT,  T_PARSER_GT,  T_PARSER_LT,  T_PARSER_GT,  },
+    /* 0 XOR */ { T_PARSER_GT,  T_PARSER_GT,  T_PARSER_GT,  T_PARSER_LT,  T_PARSER_LT,  T_PARSER_GT,  T_PARSER_LT,  T_PARSER_GT,  },
+    /* 1 OR  */ { T_PARSER_GT,  T_PARSER_GT,  T_PARSER_GT,  T_PARSER_LT,  T_PARSER_LT,  T_PARSER_GT,  T_PARSER_LT,  T_PARSER_GT,  },
+    /* 2 AND */ { T_PARSER_GT,  T_PARSER_GT,  T_PARSER_GT,  T_PARSER_LT,  T_PARSER_LT,  T_PARSER_GT,  T_PARSER_LT,  T_PARSER_GT,  },
+    /* 3 NOT */ { T_PARSER_GT,  T_PARSER_GT,  T_PARSER_GT,  T_PARSER_GT,  T_PARSER_LT,  T_PARSER_GT,  T_PARSER_LT,  T_PARSER_GT,  },
     /* 4 (   */ { T_PARSER_LT,  T_PARSER_LT,  T_PARSER_LT,  T_PARSER_LT,  T_PARSER_LT,  T_PARSER_EQ,  T_PARSER_LT,  T_PARSER_INV, },
     /* 5 )   */ { T_PARSER_GT,  T_PARSER_GT,  T_PARSER_GT,  T_PARSER_GT,  T_PARSER_INV, T_PARSER_GT,  T_PARSER_INV, T_PARSER_GT,  },
     /* 6 i   */ { T_PARSER_GT,  T_PARSER_GT,  T_PARSER_GT,  T_PARSER_GT,  T_PARSER_INV, T_PARSER_GT,  T_PARSER_INV, T_PARSER_GT,  },
@@ -62,18 +62,6 @@ namespace FastSatSolver {
     return result;
   }
 
-  inline bool isTokenOperand (Token token) {
-    switch(token.m_token) {
-      case T_FALSE:
-      case T_TRUE:
-      case T_VARIABLE:
-        return true;
-
-      default:
-        return false;
-    }
-  }
-
   inline bool isTokenTerminal (Token token) {
     // FIXME: not sure while copy-pasting
     return (token.m_token < T_PARSER_EXPR);
@@ -106,6 +94,11 @@ namespace FastSatSolver {
         Token last = container_.back();
         container_.pop_back();
         return last;
+      }
+
+      bool popAndCompare(EToken e) {
+        Token t = this->pop();
+        return t.m_token == e;
       }
 
       Token topTerm() {
@@ -160,44 +153,94 @@ namespace FastSatSolver {
         case T_PARSER_GT:
           // Reduction
 
-          if (isTokenOperand(topTerm)) {
-            // Operand reduction
-            Token opToken = stack.pop();
-            Token lt = stack.pop();
-            if (T_PARSER_LT != lt.m_token) {
-              // Invalid expression
-              d->errorDetected = true;
-              return T_ERR_EXPR;
-            }
-            // Replace terminal with non-terminal
-            stack.push(T_PARSER_EXPR);
+          switch (topTerm.m_token) {
+            case T_FALSE:
+            case T_TRUE:
+            case T_VARIABLE:
+              {
+                // Operand reduction
+                Token opToken = stack.pop();
+                if (!stack.popAndCompare(T_PARSER_LT)) {
+                  // Invalid expression
+                  d->errorDetected = true;
+                  return T_ERR_EXPR;
+                }
 
-            // TODO: Handle operand
+                // TODO: Handle operand
+                std::cerr << "<<< Execute command: " << opToken << std::endl;
+              }
+              break;
 
-          } else if (T_RPAR == topTerm.m_token) {
-            // Parthesis reduction
-            EToken rList[4];
-            for (int i=0; i<4; i++)
-              rList[i] = stack.pop().m_token;
-            if (
-                rList[1] != T_PARSER_EXPR ||
-                rList[2] != T_LPAR ||
-                rList[3] != T_PARSER_LT
-               )
-            {
-              // Error in parenthesis
-              d->errorDetected = true;
-              return T_ERR_EXPR;
-            }
-            stack.push(T_PARSER_EXPR);
-#ifndef NDEBUG
-            std::cerr << "Drop brackets..." << std::endl;
+            case T_RPAR:
+                // Parthesis reduction
+                stack.pop();
+                if (
+                    !stack.popAndCompare(T_PARSER_EXPR) ||
+                    !stack.popAndCompare(T_LPAR) ||
+                    !stack.popAndCompare(T_PARSER_LT)
+                   )
+                {
+                  // Error in parenthesis
+                  d->errorDetected = true;
+                  return T_ERR_EXPR;
+                }
+#if 0//ndef NDEBUG
+                std::cerr << "Droping brackets..." << std::endl;
 #endif // NDEBUG
-          } else
-            throw GenericException("Formula::parse(): Reduction not implemented yet");
+              break;
+
+            case T_NOT:
+              {
+                // Unary operator NOT
+                if (!stack.popAndCompare(T_PARSER_EXPR)) {
+                  // operand expected
+                  d->errorDetected = true;
+                  return T_ERR_EXPR;
+                }
+
+                Token t = stack.pop();
+                // TODO: Handle token
+                std::cerr << "<<< Execute command: " << t << std::endl;
+
+                if (!stack.popAndCompare(T_PARSER_LT)) {
+                  // invalid expression
+                  d->errorDetected = true;
+                  return T_ERR_EXPR;
+                }
+              }
+              break;
+
+            default:
+              {
+                // Binary operator
+                if (!stack.popAndCompare(T_PARSER_EXPR)) {
+                  // operand expected
+                  d->errorDetected = true;
+                  return T_ERR_EXPR;
+                }
+
+                Token t = stack.pop();
+                // TODO: Handle token
+                std::cerr << "<<< Execute command: " << t << std::endl;
+
+                if (!stack.popAndCompare(T_PARSER_EXPR)) {
+                  // operand expected
+                  d->errorDetected = true;
+                  return T_ERR_EXPR;
+                }
+
+                if (!stack.popAndCompare(T_PARSER_LT)) {
+                  // invalid expression
+                  d->errorDetected = true;
+                  return T_ERR_EXPR;
+                }
+              }
+          }
+          stack.push(T_PARSER_EXPR);
           break;
 
         case T_EOF:
+          // End of expression
           d->errorDetected = !(this->isValid());
           if (d->errorDetected)
             return T_ERR_EXPR;
@@ -205,6 +248,7 @@ namespace FastSatSolver {
             return 0;
 
         case T_PARSER_INV:
+          // Invalid token sequence
           d->errorDetected = true;
           return T_ERR_EXPR;
 
