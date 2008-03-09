@@ -5,20 +5,16 @@
 
 namespace FastSatSolver {
 
-  class SatItem : public ISatItem
-  {
-      /**
-       * @return int
-       */
-      virtual int getLength ( );
-
-      /**
-       * @return bool
-       * @param  index
-       */
-      virtual bool getBit (int index );
+  class SatSolverEngine: public ISatSolverStats {
+    public:
+      SatSolverEngine(SatProblem *problem, SatSolverParameters *params);
+      virtual ~SatSolverEngine();
+      virtual SatSolverStatsProxy* getStatsProxy();
+      void doStep();
+    private:
+      struct Private;
+      Private *d;
   };
-
 } // namespace FastSatSolver
 
 

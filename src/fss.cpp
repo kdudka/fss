@@ -1,9 +1,11 @@
 #include <iostream>
 #include "SatSolver.h"
 
-using FastSatSolver::SatSolver;
-using FastSatSolver::SatProblem;
 using FastSatSolver::GenericException;
+using FastSatSolver::SatProblem;
+using FastSatSolver::SatSolver;
+using FastSatSolver::SatSolverParameters;
+using FastSatSolver::TimedStop;
 
 // RAII object
 class SatProblemWrapper {
@@ -24,8 +26,8 @@ class SatProblemWrapper {
 // RAII object
 class SatSolverWrapper {
   public:
-    SatSolverWrapper(SatProblem *sp) {
-      this->ptr = SatSolver::create(sp);
+    SatSolverWrapper(SatProblem *problem, SatSolverParameters *params) {
+      this->ptr = SatSolver::create(problem, params);
     }
     ~SatSolverWrapper() {
       delete this->ptr;
@@ -48,7 +50,13 @@ int main(int argc, char *argv[]) {
     throw GenericException("SatProblem::hasError() returned true)");
 
   std::cerr << "SatSolver::create(...)\n";
-  SatSolverWrapper solver(sp.instance());
+  SatSolverWrapper satSolverWrapper(sp.instance(), 0);
+  SatSolver *satSolver = satSolverWrapper.instance();
+
+  TimedStop *timedStop = new TimedStop(satSolver, 2000);
+  satSolver->addObserver(timedStop);
+  satSolver->start();
+  delete timedStop;
 
   return 0;
   }
