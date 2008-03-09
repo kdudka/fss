@@ -1,11 +1,15 @@
+#include <assert.h>
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <stack>
 #include "Formula.h"
 
 using std::string;
 
 namespace FastSatSolver {
+
+  typedef std::stack<bool> TRuntimeStack;
 
   static const int TABLE_SIZE = 8;
   static const EToken table[TABLE_SIZE][TABLE_SIZE] = {
@@ -116,9 +120,117 @@ namespace FastSatSolver {
       TContainer container_;
   };
 
+  class Cmd {
+    public:
+      static Cmd* fromToken(Token token);
+      virtual ~Cmd() { }
+      virtual void execute(TRuntimeStack *, ISatItem *) = 0;
+    protected:
+      Cmd() { }
+  };
+  class CmdConstant: public Cmd {
+    public:
+      CmdConstant(bool value): b(value) { }
+      virtual void execute(TRuntimeStack *stack, ISatItem *) {
+        stack->push(b);
+      }
+    private:
+      bool b;
+  };
+  class CmdVariable: public Cmd {
+    public:
+      CmdVariable(int varId): id(varId) { }
+      virtual void execute(TRuntimeStack *stack, ISatItem *data) {
+        assert(id > 0);
+        assert(id < data->getLength());
+        bool b = data->getBit(id);
+        stack->push(b);
+      }
+    private:
+      int id;
+  };
+  class CmdUnaryNot: public Cmd {
+    public:
+      virtual void execute(TRuntimeStack *stack, ISatItem *) {
+        assert(!stack->empty());
+        bool b = stack->top();
+        stack->pop();
+        stack->push(!b);
+      }
+  };
+  class CmdBinary: public Cmd {
+    public:
+      CmdBinary(EToken e): et(e) { }
+      virtual void execute(TRuntimeStack *stack, ISatItem *data) {
+        assert(!stack->empty());
+        bool a = stack->top();
+        assert(!stack->empty());
+        bool b = stack->top();
+        bool c;
+        switch (et) {
+          case T_AND: c = a & b; break;
+          case T_OR:  c = a | b; break;
+          case T_XOR: c = a ^ b; break;
+          default:
+            {
+              std::ostringstream stream;
+              stream << "CmdBinary::execute(): unknown token: " << et;
+              throw GenericException(stream.str());
+            }
+        }
+        stack->push(c);
+      }
+    private:
+      EToken et;
+  };
+  Cmd* Cmd::fromToken(Token token) {
+    switch (token.m_token) {
+      case T_FALSE:       return new CmdConstant(false);
+      case T_TRUE:        return new CmdConstant(false);
+      case T_VARIABLE:    return new CmdVariable(token.m_ext_number);
+      case T_NOT:         return new CmdUnaryNot;
+      case T_AND:
+      case T_OR:
+      case T_XOR:
+                          return new CmdBinary(token.m_token);
+      default:
+                          {
+                            std::ostringstream stream;
+                            stream << "Cmd::fromToken(): unknown token: " << token;
+                            throw GenericException(stream.str());
+                          }
+    }
+  }
+  class CmdList: public Cmd {
+    public:
+      virtual ~CmdList() {
+        TContainer::iterator iter;
+        for(iter=container_.begin(); iter!=container_.end(); iter++)
+          delete *iter;
+      }
+      virtual void execute(TRuntimeStack *stack, ISatItem *data) {
+        TContainer::iterator iter;
+        for(iter=container_.begin(); iter!=container_.end(); iter++) {
+          Cmd *cmd = *iter;
+          cmd->execute(stack, data);
+        }
+      }
+      void operator<< (Cmd *cmd) {
+        container_.push_back(cmd);
+      }
+      void operator<< (const Token &token) {
+        operator<< (Cmd::fromToken(token));
+      }
+    private:
+      typedef std::list<Cmd *> TContainer;
+      TContainer container_;
+  };
+
   struct Formula::Private {
-    ParserStack parserStack;
-    bool errorDetected;
+    ParserStack     parserStack;
+    bool            errorDetected;
+    TRuntimeStack   runtimeStack;
+    CmdList         cmdList;
   };
 
   Formula::Formula():
@@ -166,8 +278,9 @@ namespace FastSatSolver {
                   return T_ERR_EXPR;
                 }
 
-                // TODO: Handle operand
-                std::cerr << "<<< Execute command: " << opToken << std::endl;
+                // Handle operand
+                d->cmdList << opToken;
+                //std::cerr << "<<< Execute command: " << opToken << std::endl;
               }
               break;
 
@@ -199,8 +312,9 @@ namespace FastSatSolver {
                 }
 
                 Token t = stack.pop();
-                // TODO: Handle token
-                std::cerr << "<<< Execute command: " << t << std::endl;
+                // Handle token
+                d->cmdList << t;
+                //std::cerr << "<<< Execute command: " << t << std::endl;
 
                 if (!stack.popAndCompare(T_PARSER_LT)) {
                   // invalid expression
@@ -220,8 +334,9 @@ namespace FastSatSolver {
                 }
 
                 Token t = stack.pop();
-                // TODO: Handle token
-                std::cerr << "<<< Execute command: " << t << std::endl;
+                // Handle token
+                d->cmdList << t;
+                //std::cerr << "<<< Execute command: " << t << std::endl;
 
                 if (!stack.popAndCompare(T_PARSER_EXPR)) {
                   // operand expected

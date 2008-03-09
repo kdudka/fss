@@ -428,6 +428,9 @@ namespace FastSatSolver {
             else
               return 0;
           }
+          if (T_EOF==token->m_token)
+            return 0;
+
           // Error recover
 #ifndef NDEBUG
           std::cerr << "--- Error recover" << std::endl;
