@@ -193,6 +193,13 @@ namespace FastSatSolver {
   }
 
 
+  FormulaContainer::~FormulaContainer() {
+    TContainer::iterator iter;
+    for(iter=container_.begin(); iter!=container_.end(); iter++)
+      delete *iter;
+  }
+
+
   /**
    * @return int
    */

@@ -9,6 +9,9 @@ namespace FastSatSolver {
   class Formula : public IFormulaBuilder, public IFormulaEvaluator
   {
     public:
+      Formula();
+      ~Formula();
+
       /**
        * @param  token
        */
@@ -24,6 +27,10 @@ namespace FastSatSolver {
        */
 
       bool eval (ISatItem *data );
+
+    private:
+      struct Private;
+      Private *const d;
   };
 
 

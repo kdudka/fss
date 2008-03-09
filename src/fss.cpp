@@ -47,8 +47,8 @@ int main(int argc, char *argv[]) {
   if (sp.instance()->hasError())
     throw GenericException("Unhandled error in main()");
 
-  std::cerr << "SatSolver::create(...)\n";
-  SatSolverWrapper(sp.instance());
+  /*std::cerr << "SatSolver::create(...)\n";
+  SatSolverWrapper(sp.instance());*/
 
   return 0;
   }
