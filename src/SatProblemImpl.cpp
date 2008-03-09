@@ -415,21 +415,30 @@ namespace FastSatSolver {
 
         case T_EOF:
         case T_DELIM:
+          current_ -> parse(T_EOF);
           if (!ignoreToDelim_ && current_->isValid()) {
             // Formula successfully readed
             fc_->addFormula(current_);
             current_ = new Formula;
+#ifndef NDEBUG
+            std::cerr << ">>> Formula red successfully" << std::endl;
+#endif // NDEBUG
             if (T_DELIM==token->m_token)
               break;
             else
               return 0;
           }
+          // Error recover
+#ifndef NDEBUG
+          std::cerr << "--- Error recover" << std::endl;
+#endif // NDEBUG
+          delete current_;
+          current_ = new Formula;
           if (!ignoreToDelim_) {
             // Parse error
             token->m_token = T_ERR_PARSE;
             return 0;
           }
-          // Revitalization
           ignoreToDelim_ = false;
           break;
 

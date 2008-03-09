@@ -56,9 +56,8 @@ namespace FastSatSolver {
 
 
 #ifndef NDEBUG
-  inline std::ostream& operator<< (std::ostream &stream, Token token) {
-    stream << "Token: ";
-    switch (token.m_token) {
+  inline std::ostream& operator<< (std::ostream &stream, EToken e) {
+    switch (e) {
       case T_EOF:         stream << "T_EOF";          break;
       case T_FALSE:       stream << "T_FALSE";        break;
       case T_TRUE:        stream << "T_TRUE";         break;
@@ -80,9 +79,13 @@ namespace FastSatSolver {
       case T_ERR_LEX:     stream << "T_ERR_LEX";      break;
       case T_ERR_EXPR:    stream << "T_ERR_EXPR";     break;
       case T_ERR_PARSE:   stream << "T_ERR_PARSE";    break;
-      default:            stream << token.m_token;    break;
+      default:            stream << e;                break;
     }
-    stream << std::endl;
+    return stream;
+  }
+
+  inline std::ostream& operator<< (std::ostream &stream, Token token) {
+    stream << "Token: " << token.m_token << std::endl;
     if (token.m_line)
       stream << "       At line: " << token.m_line  << std::endl;
     if (T_VARIABLE == token.m_token) {
