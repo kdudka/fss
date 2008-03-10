@@ -1,0 +1,9 @@
+~unaveny OR jdu_spat;
+jdu_spat OR zitra_spatne;
+~zitra_spatne OR kruhac_spatny;
+~(kruhac_spatny AND objed) OR grcka;
+~(objed XOR (objed_v_menze OR objed_doma));
+objed_v_menze XOR objed_doma;
+unaveny;
+~grcka;
+objed_doma;

@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
   SatSolverWrapper satSolverWrapper(sp.instance(), 0);
   SatSolver *satSolver = satSolverWrapper.instance();
 
-  TimedStop *timedStop = new TimedStop(satSolver, 2000);
+  TimedStop *timedStop = new TimedStop(satSolver, 1000);
   satSolver->addObserver(timedStop);
   satSolver->start();
   delete timedStop;

@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <time.h>
 #include <iostream>
+#include <iomanip>
 #include <list>
 #include <ga/GA1DBinStrGenome.h>
 #include <ga/GASimpleGA.h>
@@ -201,6 +202,22 @@ namespace FastSatSolver {
     const int formulasCount = problem->getFormulasCount();
     const int satsCount = problem->getSatsCount(&data);
     float fitness = static_cast<float>(satsCount)/formulasCount;
+
+#ifndef NDEBUG
+    static float maxFitness = 0.0;
+    if (fitness > maxFitness) {
+      maxFitness = fitness;
+      using namespace std;
+      std::cerr << "--- satisfaction: " << fixed << setw(5) << setprecision(1) << maxFitness*100.0 << "% (";
+      const int varsCount = problem->getVarsCount();
+      for (int i=0; i<varsCount; i++) {
+        std::cerr << problem->getVarName(i) << "=" << data.getBit(i);
+        if (i != varsCount-1)
+          std::cerr << ", ";
+      }
+      std::cerr << ")" << std::endl;
+    }
+#endif // NDEBUG
 
     // TODO: scale fitness?
     return fitness;
