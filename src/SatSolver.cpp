@@ -121,12 +121,12 @@ namespace FastSatSolver {
     d->params = params;
     d->engine = 0;
 #ifndef NDEBUG
-    std::cerr << "  Formulas count: " << problem->getFormulasCount() << std::endl;
-    std::cerr << "  Variables count: " << problem->getVarsCount() << std::endl;
-    std::cerr << "  Variables: ";
+    std::cout << "<<< Formulas count: " << problem->getFormulasCount() << std::endl;
+    std::cout << "<<< Variables count: " << problem->getVarsCount() << std::endl;
+    std::cout << "<<< Variables: ";
     for(int i=0; i< problem->getVarsCount(); i++)
-      std::cerr << problem->getVarName(i) << ", ";
-    std::cerr << std::endl;
+      std::cout << problem->getVarName(i) << ", ";
+    std::cout << std::endl;
 #endif // NDEBUG
   }
   SatSolver::~SatSolver() {
@@ -217,17 +217,17 @@ namespace FastSatSolver {
     if (fitness > maxFitness) {
       maxFitness = fitness;
       using namespace std;
-      std::cerr << "--- satisfaction: " << fixed << setw(5) << setprecision(1) << maxFitness*100.0 << "% (";
+      std::cout << "--- satisfaction: " << fixed << setw(5) << setprecision(1) << maxFitness*100.0 << "% (";
       const int varsCount = problem->getVarsCount();
       for (int i=0; i<varsCount; i++) {
-        std::cerr << problem->getVarName(i) << "=" << data.getBit(i);
+        std::cout << problem->getVarName(i) << "=" << data.getBit(i);
         if (i != varsCount-1)
-          std::cerr << ", ";
+          std::cout << ", ";
       }
-      std::cerr << ")" << std::endl;
+      std::cout << ")" << std::endl;
     }
     if (formulasCount == satsCount) {
-      std::cerr << ">>> Satisfaction reached, stopping GA..." << std::endl;
+      std::cout << ">>> Satisfaction reached, stopping GA..." << std::endl;
       solver->stop();
     }
 #endif // NDEBUG

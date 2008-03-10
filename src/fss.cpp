@@ -46,9 +46,8 @@ int main(int argc, char *argv[]) {
   SatProblemWrapper sp;
 
   std::cerr << "SatProblem::loadFromInput()...\n";
-  sp.instance()->loadFromFile("form.txt");
   //sp.instance()->loadFromFile(argv[1]);
-  //sp.instance()->loadFromInput();
+  sp.instance()->loadFromInput();
   if (sp.instance()->hasError())
     throw GenericException("SatProblem::hasError() returned true)");
 

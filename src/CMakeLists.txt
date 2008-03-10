@@ -28,6 +28,8 @@ SET(CMAKE_CXX_FLAGS "${STD_FLAG} ${PEDANTIC_FLAG} ${DEBUG_FLAG}" CACHE STRING "C
 ADD_EXECUTABLE(fss SatSolver.cpp SatProblem.cpp Scanner.cpp Formula.cpp fss.cpp)
 TARGET_LINK_LIBRARIES(fss ga)
 
+ADD_EXECUTABLE(randsat randsat.cpp)
+
 #TARGET_LINK_LIBRARIES(rrv-visualize rrv)
 # make install
 #INSTALL(TARGETS rrv-compute rrv-visualize DESTINATION bin)
