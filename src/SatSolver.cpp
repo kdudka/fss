@@ -5,8 +5,19 @@
 #include <list>
 #include <ga/GA1DBinStrGenome.h>
 #include <ga/GASimpleGA.h>
+#include <ga/GAStatistics.h>
 #include "SatProblem.h"
 #include "SatSolver.h"
+
+namespace {
+  struct FixFloatManip {
+    int w,p;
+    FixFloatManip(int integral, int decimal): w(integral+decimal+1), p(decimal) { }
+  };
+  std::ostream& operator<< (std::ostream &stream, const FixFloatManip &manip) {
+    return stream << std::fixed << std::setw(manip.w) << std::setprecision(manip.p);
+  }
+}
 
 namespace FastSatSolver {
 
@@ -178,6 +189,7 @@ namespace FastSatSolver {
     int genomeLength = d->problem->getVarsCount();
     d->genome = new GA1DBinaryStringGenome(genomeLength, Private::fitness, d);
     d->ga = new GASimpleGA(*(d->genome));
+    GARandomSeed();
   }
   SatSolverEngine::~SatSolverEngine() {
     delete d->ga;
@@ -185,6 +197,14 @@ namespace FastSatSolver {
     delete d;
   }
   SatSolverStatsProxy* SatSolverEngine::getStatsProxy() {
+    class ProxyImpl: public SatSolverStatsProxy {
+      public:
+        ProxyImpl(SatSolverEngine::Private *d):
+          SatSolverStatsProxy(d->solver, d->ga->statistics())
+        {
+        }
+    };
+    return new ProxyImpl(d);
   }
   void SatSolverEngine::doStep() {
     d->ga->step();
@@ -196,45 +216,71 @@ namespace FastSatSolver {
     SatSolver *solver = dynamic_cast<SatSolver *>(d->solver);
     const GABinaryString &bs= dynamic_cast<GABinaryString &>(genome);
 
-    // Adapter
-    class Data: public ISatItem {
-      public:
-        Data(const GABinaryString &bs): bs_(bs) { }
-        virtual int getLength() { return bs_.size(); }
-        virtual bool getBit(int index) { return bs_.bit(index); }
-      private:
-        const GABinaryString &bs_;
-    } data(bs);
-
     // Compute fitness
+    SatItemGalibAdatper data(bs);
     const int formulasCount = problem->getFormulasCount();
     const int satsCount = problem->getSatsCount(&data);
     float fitness = static_cast<float>(satsCount)/formulasCount;
 
-    // TODO: remove next block
-#ifndef NDEBUG
     static float maxFitness = 0.0;
     if (fitness > maxFitness) {
       maxFitness = fitness;
-      using namespace std;
-      std::cout << "--- satisfaction: " << fixed << setw(5) << setprecision(1) << maxFitness*100.0 << "% (";
-      const int varsCount = problem->getVarsCount();
-      for (int i=0; i<varsCount; i++) {
-        std::cout << problem->getVarName(i) << "=" << data.getBit(i);
-        if (i != varsCount-1)
-          std::cout << ", ";
-      }
-      std::cout << ")" << std::endl;
+      solver->notify();
     }
-    if (formulasCount == satsCount) {
-      std::cout << ">>> Satisfaction reached, stopping GA..." << std::endl;
-      solver->stop();
-    }
-#endif // NDEBUG
 
     // TODO: scale fitness?
     return fitness;
   }
+
+  // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // SatItemGalibAdatper implementation
+  SatItemGalibAdatper::SatItemGalibAdatper(const GABinaryString &bs): bs_(bs) { }
+  int SatItemGalibAdatper::getLength()        { return bs_.size(); }
+  bool SatItemGalibAdatper::getBit(int index) { return bs_.bit(index); }
+
+
+  // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // SatSolverStatsProxy implementation
+  struct SatSolverStatsProxy::Private {
+    SatSolver     *solver;
+    GAStatistics  stats;
+  };
+  // protected
+  SatSolverStatsProxy::SatSolverStatsProxy(SatSolver *solver, const GAStatistics &stats):
+    d(new Private)
+  {
+    d->solver = solver;
+    d->stats.copy(stats);
+    // FIXME: Is this necessary?
+    d->stats.flushScores();
+  }
+  SatSolverStatsProxy::~SatSolverStatsProxy() {
+    delete d;
+  }
+  const GAStatistics& SatSolverStatsProxy::statistics() const {
+    return d->stats;
+  }
+  float SatSolverStatsProxy::getMaxFitness() const {
+    return statistics().maxEver();
+  }
+  float SatSolverStatsProxy::getAvgFitness() const {
+    return statistics().offlineMax();
+  }
+  float SatSolverStatsProxy::getMinFitness() const {
+    return statistics().offlineMin();
+  }
+  int SatSolverStatsProxy::getGeneration() const {
+    return statistics().generation();
+  }
+  int SatSolverStatsProxy::getTimeElapsed() const {
+    return d->solver->getTimeElapsed();
+  }
+  std::ostream& operator<< (std::ostream &stream, const SatSolverStatsProxy &proxy) {
+    stream << proxy.statistics();
+    return stream;
+  }
+
+
 
   // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // TimedStop implementation
@@ -257,7 +303,58 @@ namespace FastSatSolver {
       d->process->stop();
   }
 
+  // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // FitnessWatch implementation
+  struct FitnessWatch::Private {
+    ISatSolverStats *solver;
+    std::ostream    &stream;
+    float           maxFitness;
 
+    Private(std::ostream &streamTo): stream(streamTo) { }
+  };
+  FitnessWatch::FitnessWatch(ISatSolverStats *statsResource, std::ostream &streamTo):
+    d(new Private(streamTo))
+  {
+    d->solver = statsResource;
+    d->maxFitness = 0.0;
+  }
+  FitnessWatch::~FitnessWatch() {
+    delete d;
+  }
+  void FitnessWatch::notify() {
+    SatSolverStatsProxy *statsProxy= d->solver->getStatsProxy();
+    float maxFitness = statsProxy->getMaxFitness();
+    if (maxFitness <= d->maxFitness) {
+      // Fitness not changed
+      delete statsProxy;
+      return;
+    }
+    d->maxFitness = maxFitness;
+
+    const float avgFitness= statsProxy->getAvgFitness();
+    const float minFitness= statsProxy->getMinFitness();
+    const int generation= statsProxy->getGeneration();
+    const float timeElapsed= (statsProxy->getTimeElapsed())/1000.0;
+
+    d->stream
+      << "--- satisfaction:" << FixFloatManip(3,1) << maxFitness*100.0 << "%"
+      << "(avg:" << FixFloatManip(3,1) << avgFitness*100.0
+      << ", min:" << FixFloatManip(3,1) << minFitness*100.0 << ")"
+      << ", generation " << std::setw(5) << generation
+      << ", time elapsed: " << FixFloatManip(5,2) << timeElapsed << " s"
+      << std::endl;
+      /*const int varsCount = problem->getVarsCount();
+      for (int i=0; i<varsCount; i++) {
+        std::cout << problem->getVarName(i) << "=" << data.getBit(i);
+        if (i != varsCount-1)
+          std::cout << ", ";
+      }
+      std::cout << ")" << std::endl;*/
+    delete statsProxy;
+  }
+    /*if (formulasCount == satsCount) {
+      std::cout << ">>> Satisfaction reached, stopping GA..." << std::endl;
+      solver->stop();*/
 
 
 } // namespace FastSatSolver

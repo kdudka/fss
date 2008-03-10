@@ -8,6 +8,8 @@ using FastSatSolver::SatProblem;
 using FastSatSolver::SatSolver;
 using FastSatSolver::SatSolverParameters;
 using FastSatSolver::TimedStop;
+using FastSatSolver::FitnessWatch;
+using FastSatSolver::SatSolverStatsProxy;
 
 // RAII object
 class SatProblemWrapper {
@@ -55,10 +57,17 @@ int main(int argc, char *argv[]) {
   SatSolverWrapper satSolverWrapper(sp.instance(), 0);
   SatSolver *satSolver = satSolverWrapper.instance();
 
-  TimedStop *timedStop = new TimedStop(satSolver, 5000);
+  TimedStop *timedStop = new TimedStop(satSolver, 60*1000);
+  FitnessWatch *fitnessWatch = new FitnessWatch(satSolver, std::cout);
   satSolver->addObserver(timedStop);
+  satSolver->addObserver(fitnessWatch);
   satSolver->start();
+  delete fitnessWatch;
   delete timedStop;
+
+  SatSolverStatsProxy *statsProxy= satSolver->getStatsProxy();
+  std::cout << *statsProxy << std::endl;
+  delete statsProxy;
 
   return 0;
   }

@@ -1,7 +1,12 @@
 #ifndef SATSOLVER_H
 #define SATSOLVER_H
 
+#include <iostream>
 #include <string>
+
+class GAGenome;
+class GABinaryString;
+class GAStatistics;
 
 namespace FastSatSolver {
 
@@ -105,9 +110,26 @@ namespace FastSatSolver {
   };
 
 
-  // TODO: Define interfaces
+  // TODO: Define interface
   class SatSolverParameters;
-  class SatSolverStatsProxy;
+
+  class SatSolver;
+  class SatSolverStatsProxy {
+    public:
+      virtual ~SatSolverStatsProxy();
+      const GAStatistics& statistics() const;
+      float getMaxFitness() const;
+      float getAvgFitness() const;
+      float getMinFitness() const;
+      int getGeneration() const;
+      int getTimeElapsed() const;
+    protected:
+      SatSolverStatsProxy(SatSolver *, const GAStatistics &);
+    private:
+      struct Private;
+      Private *d;
+  };
+  std::ostream& operator<< (std::ostream&, const SatSolverStatsProxy &);
 
   class ISatSolverStats {
     public:
@@ -121,6 +143,8 @@ namespace FastSatSolver {
     public AbstractProcessWatched,
     public ISatSolverStats
   {
+    friend class SatSolverEngine;
+
     public:
       virtual ~SatSolver();
 
@@ -160,10 +184,31 @@ namespace FastSatSolver {
   };
 
 
+  class SatItemGalibAdatper: public ISatItem {
+    public:
+      SatItemGalibAdatper(const GABinaryString &);
+      virtual int getLength();
+      virtual bool getBit(int);
+    private:
+      const GABinaryString &bs_;
+  };
+
+
   class TimedStop: public IObserver {
     public:
       TimedStop(AbstractProcessWatched *process, long msec);
       virtual ~TimedStop();
+      virtual void notify();
+    private:
+      struct Private;
+      Private *d;
+  };
+
+
+  class FitnessWatch: public IObserver {
+    public:
+      FitnessWatch(ISatSolverStats *statsResource, std::ostream &streamTo);
+      virtual ~FitnessWatch();
       virtual void notify();
     private:
       struct Private;
