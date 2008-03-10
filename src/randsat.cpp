@@ -84,13 +84,13 @@ int main(int argc, char *argv[]) {
           break;
         }
         // Open a pair of brackets
-        if (rnd.getRand() < 0.2) {
+        if (rnd.getRand(0.1f*lParCount, 1.0f) < 0.5) {
           std::cout << "(" << std::flush;
           lParCount++;
           break;
         }
         // Random variable
-        std::cout << varNames[rnd.getRand(0, VARCOUNT-1)] << " " << std::flush;
+        std::cout << varNames[rnd.getRand(0, VARCOUNT-1)] << std::flush;
         state = S_BINOP;
         break;
 
@@ -104,14 +104,14 @@ int main(int argc, char *argv[]) {
           state = S_EXPR;
           break;
         }
-        if (lParCount && rnd.getRand() < 0.5) {
+        if (rnd.getRand() < 0.05*lParCount) {
           // Close a pair of brackets
           std::cout << ")" << std::flush;
           lParCount--;
           break;
         }
         // Random binary operator
-        std::cout << binopSet[rnd.getRand(0, binopSet.size()-1)] << " " << std::flush;
+        std::cout << " " << binopSet[rnd.getRand(0, binopSet.size()-1)] << " " << std::flush;
         state = S_EXPR;
         break;
     }

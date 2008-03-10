@@ -200,7 +200,7 @@ namespace FastSatSolver {
             // Formula successfully readed
             d->fc->addFormula(d->current);
             d->current = new InterpretedFormula;
-#ifndef NDEBUG
+#if 0//ndef NDEBUG
             std::cerr << ">>> Formula red successfully" << std::endl;
 #endif // NDEBUG
             if (T_DELIM==token->m_token)
