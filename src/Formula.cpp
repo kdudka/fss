@@ -141,7 +141,7 @@ namespace FastSatSolver {
     public:
       CmdVariable(int varId): id(varId) { }
       virtual void execute(TRuntimeStack *stack, ISatItem *data) {
-        assert(id > 0);
+        assert(id >= 0);
         assert(id < data->getLength());
         bool b = data->getBit(id);
         stack->push(b);
@@ -164,8 +164,12 @@ namespace FastSatSolver {
       virtual void execute(TRuntimeStack *stack, ISatItem *) {
         assert(!stack->empty());
         bool a = stack->top();
+        stack->pop();
+
         assert(!stack->empty());
         bool b = stack->top();
+        stack->pop();
+
         bool c;
         switch (et) {
           case T_AND: c = a & b; break;
@@ -407,8 +411,14 @@ namespace FastSatSolver {
 
     TRuntimeStack stack;
     d->cmdList.execute(&stack, data);
-    if (1!=stack.size())
-      throw GenericException("Formula::eval(): incorrect stack size after cmdList.execute()");
+
+    // Check stack size (should be 1)
+    const int stackSize = stack.size();
+    if (1!=stackSize) {
+      std::ostringstream stream;
+      stream << "Formula::eval(): incorrect stack size after cmdList.execute(): " << stackSize;
+      throw GenericException(stream.str());
+    }
 
     return stack.top();
   }

@@ -2,6 +2,8 @@
 #include <time.h>
 #include <iostream>
 #include <list>
+#include <ga/GA1DBinStrGenome.h>
+#include <ga/GASimpleGA.h>
 #include "SatSolverImpl.h"
 
 namespace FastSatSolver {
@@ -111,6 +113,7 @@ namespace FastSatSolver {
     SatSolverParameters   *params;
     SatSolverEngine       *engine;
   };
+  // protected
   SatSolver::SatSolver (SatProblem *problem, SatSolverParameters *params):
     d(new Private)
   {
@@ -140,10 +143,12 @@ namespace FastSatSolver {
     assert(0!=stats);
     return stats->getStatsProxy();
   }
+  // protected
   void SatSolver::initialize() {
     delete d->engine;
     d->engine = new SatSolverEngine(d->problem, d->params);
   }
+  // protected
   void SatSolver::doStep() {
     SatSolverEngine *engine = d->engine;
     assert(0!=engine);
@@ -153,17 +158,52 @@ namespace FastSatSolver {
   // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // SatSolverEngine implementation
   struct SatSolverEngine::Private {
+    SatProblem                *problem;
+    GA1DBinaryStringGenome    *genome;
+    GASimpleGA                *ga;
+    static float fitness(GAGenome &);
   };
   SatSolverEngine::SatSolverEngine(SatProblem *problem, SatSolverParameters *params):
     d(new Private)
   {
+    d->problem = problem;
+    int genomeLength = problem->getVarsCount();
+    d->genome = new GA1DBinaryStringGenome(genomeLength, Private::fitness, d);
+    d->ga = new GASimpleGA(*(d->genome));
   }
   SatSolverEngine::~SatSolverEngine() {
+    delete d->ga;
+    delete d->genome;
     delete d;
   }
   SatSolverStatsProxy* SatSolverEngine::getStatsProxy() {
   }
   void SatSolverEngine::doStep() {
+    d->ga->step();
+  }
+  float SatSolverEngine::Private::fitness(GAGenome &genome) {
+    // Static to non-static connections
+    Private *d = reinterpret_cast<Private *>(genome.userData());
+    SatProblem *problem = dynamic_cast<SatProblem *>(d->problem);
+    const GABinaryString &bs= dynamic_cast<GABinaryString &>(genome);
+
+    // Adapter
+    class Data: public ISatItem {
+      public:
+        Data(const GABinaryString &bs): bs_(bs) { }
+        virtual int getLength() { return bs_.size(); }
+        virtual bool getBit(int index) { return bs_.bit(index); }
+      private:
+        const GABinaryString &bs_;
+    } data(bs);
+
+    // Compute fitness
+    const int formulasCount = problem->getFormulasCount();
+    const int satsCount = problem->getSatsCount(&data);
+    float fitness = static_cast<float>(satsCount)/formulasCount;
+
+    // TODO: scale fitness?
+    return fitness;
   }
 
   // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

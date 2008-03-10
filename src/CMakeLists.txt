@@ -26,6 +26,7 @@ SET(CMAKE_CXX_FLAGS "${STD_FLAG} ${PEDANTIC_FLAG} ${DEBUG_FLAG}" CACHE STRING "C
 
 # Executable binary rrv-visualize
 ADD_EXECUTABLE(fss SatSolverImpl.cpp SatProblemImpl.cpp Formula.cpp fss.cpp)
+TARGET_LINK_LIBRARIES(fss ga)
 
 #TARGET_LINK_LIBRARIES(rrv-visualize rrv)
 # make install
