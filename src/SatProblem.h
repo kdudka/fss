@@ -2,10 +2,6 @@
 #define SATPROBLEMIMPL_H
 
 #include <string>
-#include <vector>
-#include <list>
-#include <map>
-#include "SatSolver.h"
 #include "Scanner.h"
 
 namespace FastSatSolver {
@@ -13,6 +9,8 @@ namespace FastSatSolver {
   class VariableContainer
   {
     public:
+      VariableContainer();
+      ~VariableContainer();
       /**
        * @return int
        */
@@ -31,30 +29,23 @@ namespace FastSatSolver {
       int addVariable (std::string name );
 
     private:
-      typedef std::string TVarName;
-      typedef std::vector<TVarName> TIndexToName;
-      typedef std::map<TVarName, int> TNameToIndex;
-      TIndexToName indexToName_;
-      TNameToIndex nameToIndex_;
-      int currentIndex_;
+      struct Private;
+      Private *d;
   };
 
 
+  class ISatItem;
   class IFormulaEvaluator;
   class FormulaContainer
   {
     public:
+      FormulaContainer();
       ~FormulaContainer();
 
       /**
        * @return int
        */
       int getLength ( );
-
-      /**
-       * @param  index
-       *
-      void getItem (int index );*/
 
       /**
        * @return int
@@ -68,62 +59,55 @@ namespace FastSatSolver {
       void addFormula (IFormulaEvaluator *formula );
 
     private:
-      typedef std::list<IFormulaEvaluator *> TContainer;
-      TContainer container_;
+      struct Private;
+      Private *d;
   };
 
 
-  class SatProblemImpl : public SatProblem
-  {
+  class SatProblem {
     public:
-      SatProblemImpl();
+      SatProblem();
+      ~SatProblem();
 
       /**
        * @param  fileName
        */
-      virtual void loadFromFile (std::string fileName );
+      void loadFromFile (std::string fileName );
 
       /**
       */
-      virtual void loadFromInput ( );
+      void loadFromInput ( );
 
       /**
        * @return int
        */
-      virtual int getVarsCount ( );
+      int getVarsCount ( );
 
       /**
        * @return std::string
        * @param  index
        */
-      virtual std::string getVarName (int index );
+      std::string getVarName (int index );
 
       /**
        * @return
        */
-      virtual int getFormulasCount();
+      int getFormulasCount();
 
       /**
        * @return int
        * @param  data
        */
-      virtual int getSatsCount (ISatItem *data);
+      int getSatsCount (ISatItem *data);
 
       /**
        * @return bool
        */
-      virtual bool hasError ( );
+      bool hasError ( );
 
     private:
-      bool                hasError_;
-      VariableContainer   vc_;
-      FormulaContainer    fc_;
-      std::string         fileName_;
-
-    private:
-      void parseFile(FILE *);
-      void parserLoop(IScanner *);
-      void printError(Token);
+      struct Private;
+      Private *d;
   };
 
 } // namespace FastSatSolver

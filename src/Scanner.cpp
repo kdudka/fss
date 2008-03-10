@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 #include <map>
-#include "SatProblemImpl.h"
+#include "SatProblem.h"
 #include "Scanner.h"
 #include "Formula.h"
 

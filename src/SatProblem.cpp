@@ -1,30 +1,41 @@
 #include <stdio.h>
 #include <assert.h>
 #include <iostream>
-#include "SatProblemImpl.h"
+#include <string>
+#include <vector>
+#include <list>
+#include <map>
+#include "SatSolver.h"
+#include "Scanner.h"
 #include "Formula.h"
+#include "SatProblem.h"
 
 using std::string;
 
 namespace FastSatSolver {
 
-  /**
-   * @return SatProblem*
-   */
-  SatProblem* SatProblem::create ( ) {
-    return new SatProblemImpl;
-  }
+  // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // SatProblem implementation
+  struct SatProblem::Private {
+    bool                hasError;
+    VariableContainer   vc;
+    FormulaContainer    fc;
+    std::string         fileName;
 
-  SatProblemImpl::SatProblemImpl():
-    hasError_(false)
+    void parseFile(FILE *);
+    void parserLoop(IScanner *);
+    void printError(Token);
+  };
+  SatProblem::SatProblem():
+    d(new Private)
   {
+    d->hasError = false;
   }
-
-  /**
-   * @param  fileName
-   */
-  void SatProblemImpl::loadFromFile (string fileName ) {
-    fileName_ = fileName;
+  SatProblem::~SatProblem() {
+    delete d;
+  }
+  void SatProblem::loadFromFile (string fileName ) {
+    d->fileName = fileName;
 
     // OpenedFile RAII
     class OpenedFileRAII {
@@ -41,20 +52,20 @@ namespace FastSatSolver {
       private:
         FILE* fd_;
     } openedFile(fileName);
-    this->parseFile(openedFile.getFd());
+    d->parseFile(openedFile.getFd());
   }
 
 
   /**
   */
-  void SatProblemImpl::loadFromInput ( ) {
-    fileName_ = "-";
-    this->parseFile(stdin);
+  void SatProblem::loadFromInput ( ) {
+    d->fileName = "-";
+    d->parseFile(stdin);
   }
 
 
   // @private
-  void SatProblemImpl::parseFile(FILE *fd) {
+  void SatProblem::Private::parseFile(FILE *fd) {
     // RawScanner RAII
     class RawScanRAII {
       public:
@@ -75,7 +86,7 @@ namespace FastSatSolver {
         ScannerStringHandler* instance() { return ptr_; }
       private:
         ScannerStringHandler *ptr_;
-    } stringScan(rawScan.instance(), &vc_);
+    } stringScan(rawScan.instance(), &vc);
 
     // ScannerFormulaHandler RAII
     class FormulaScanRAII {
@@ -87,14 +98,14 @@ namespace FastSatSolver {
         ScannerFormulaHandler* instance() { return ptr_; }
       private:
         ScannerFormulaHandler *ptr_;
-    } formulaScan(stringScan.instance(), &fc_);
+    } formulaScan(stringScan.instance(), &fc);
 
     this->parserLoop(formulaScan.instance());
   }
 
 
   // @private
-  void SatProblemImpl::parserLoop(IScanner *scanner) {
+  void SatProblem::Private::parserLoop(IScanner *scanner) {
     Token token;
     while (0== scanner->readNext(&token) && T_EOF!=token.m_token) {
       switch (token.m_token) {
@@ -112,9 +123,9 @@ namespace FastSatSolver {
 
 
   // @private
-  void SatProblemImpl::printError(Token token) {
-    this->hasError_ = true;
-    std::cerr << fileName_ << ":" << token.m_line << ": error: ";
+  void SatProblem::Private::printError(Token token) {
+    this->hasError = true;
+    std::cerr << fileName << ":" << token.m_line << ": error: ";
     switch (token.m_token) {
       case T_ERR_LEX:   std::cerr << "lexical error";     break;
       case T_ERR_EXPR:  std::cerr << "expression error";  break;
@@ -129,8 +140,8 @@ namespace FastSatSolver {
   /**
    * @return int
    */
-  int SatProblemImpl::getVarsCount ( ) {
-    return vc_.getLength();
+  int SatProblem::getVarsCount ( ) {
+    return d->vc.getLength();
   }
 
 
@@ -138,16 +149,16 @@ namespace FastSatSolver {
    * @return string
    * @param  index
    */
-  string SatProblemImpl::getVarName (int index ) {
-    return vc_.getVarName(index);
+  string SatProblem::getVarName (int index ) {
+    return d->vc.getVarName(index);
   }
 
 
   /**
    * @return
    */
-  int SatProblemImpl::getFormulasCount() {
-    return fc_.getLength();
+  int SatProblem::getFormulasCount() {
+    return d->fc.getLength();
   }
 
 
@@ -155,57 +166,69 @@ namespace FastSatSolver {
    * @return int
    * @param  data
    */
-  int SatProblemImpl::getSatsCount (ISatItem *data ) {
-    return fc_.evalAll(data);
+  int SatProblem::getSatsCount (ISatItem *data ) {
+    return d->fc.evalAll(data);
   }
 
 
   /**
    * @return bool
    */
-  bool SatProblemImpl::hasError ( ) {
-    return hasError_;
+  bool SatProblem::hasError ( ) {
+    return d->hasError;
   }
 
-
-  /**
-   * @return int
-   */
+  // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // VariableContainer implementation
+  struct VariableContainer::Private {
+    typedef std::string               TVarName;
+    typedef std::vector<TVarName>     TIndexToName;
+    typedef std::map<TVarName, int>   TNameToIndex;
+    TIndexToName    indexToName;
+    TNameToIndex    nameToIndex;
+    int             currentIndex;
+  };
+  VariableContainer::VariableContainer():
+    d(new Private)
+  {
+    d->currentIndex = 0;
+  }
+  VariableContainer::~VariableContainer() {
+    delete d;
+  }
   int VariableContainer::getLength ( ) {
-    return currentIndex_;
+    return d->currentIndex;
   }
-
-
-  /**
-   * @return string
-   * @param  index
-   */
   string VariableContainer::getVarName (int index ) {
-    assert(index < currentIndex_);
-    return indexToName_[index];
+    assert(index < d->currentIndex);
+    return d->indexToName[index];
   }
-
-
-  /**
-   * @return int
-   * @param  name
-   */
   int VariableContainer::addVariable (string name ) {
-    if (nameToIndex_.end() != nameToIndex_.find(name))
+    if (d->nameToIndex.end() != d->nameToIndex.find(name))
       // Variable already exists
-      return nameToIndex_[name];
+      return d->nameToIndex[name];
 
     // Add new variable
-    nameToIndex_[name] = currentIndex_;
-    indexToName_.push_back(name);
-    return currentIndex_++;
+    d->nameToIndex[name] = d->currentIndex;
+    d->indexToName.push_back(name);
+    return (d->currentIndex)++;
   }
 
-
+  // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // FormulaContainer implementation
+  struct FormulaContainer::Private {
+      typedef std::list<IFormulaEvaluator *> TContainer;
+      TContainer container;
+  };
+  FormulaContainer::FormulaContainer():
+    d(new Private)
+  {
+  }
   FormulaContainer::~FormulaContainer() {
-    TContainer::iterator iter;
-    for(iter=container_.begin(); iter!=container_.end(); iter++)
+    Private::TContainer::iterator iter;
+    for(iter=d->container.begin(); iter!=d->container.end(); iter++)
       delete *iter;
+    delete d;
   }
 
 
@@ -213,16 +236,8 @@ namespace FastSatSolver {
    * @return int
    */
   int FormulaContainer::getLength ( ) {
-    return container_.size();
+    return d->container.size();
   }
-
-
-  /**
-   * @param  index
-   *
-  void FormulaContainer::getItem (int index ) {
-
-  }*/
 
 
   /**
@@ -232,8 +247,8 @@ namespace FastSatSolver {
   int FormulaContainer::evalAll (ISatItem *data ) {
     int counter = 0;
 
-    TContainer::iterator iter;
-    for(iter=container_.begin(); iter!=container_.end(); iter++) {
+    Private::TContainer::iterator iter;
+    for(iter=d->container.begin(); iter!=d->container.end(); iter++) {
       IFormulaEvaluator *fe = *iter;
       counter += fe->eval(data);
     }
@@ -241,12 +256,11 @@ namespace FastSatSolver {
     return counter;
   }
 
-
   /**
    * @param  formula
    */
   void FormulaContainer::addFormula (IFormulaEvaluator *formula ) {
-    container_.push_back(formula);
+    d->container.push_back(formula);
   }
 
 } // namespace FastSatSolver

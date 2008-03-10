@@ -3,6 +3,8 @@
 #include <sstream>
 #include <vector>
 #include <stack>
+#include <list>
+#include "SatSolver.h"
 #include "Formula.h"
 
 using std::string;

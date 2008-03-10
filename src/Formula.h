@@ -1,7 +1,7 @@
 #ifndef FOROMULA_H
 #define FOROMULA_H
 
-#include "SatProblemImpl.h"
+#include "SatProblem.h"
 
 
 namespace FastSatSolver {

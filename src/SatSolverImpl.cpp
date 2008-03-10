@@ -5,6 +5,7 @@
 #include <list>
 #include <ga/GA1DBinStrGenome.h>
 #include <ga/GASimpleGA.h>
+#include "SatProblem.h"
 #include "SatSolverImpl.h"
 
 namespace FastSatSolver {

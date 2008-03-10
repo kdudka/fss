@@ -37,54 +37,6 @@ namespace FastSatSolver {
   };
 
 
-  class SatProblem
-  {
-    public:
-      virtual ~SatProblem() { }
-
-      /**
-       * @return SatProblem*
-       */
-      static SatProblem* create ( );
-
-      /**
-       * @param  fileName
-       */
-      virtual void loadFromFile (std::string fileName ) = 0;
-
-      /**
-      */
-      virtual void loadFromInput ( ) = 0;
-
-      /**
-       * @return int
-       */
-      virtual int getVarsCount ( ) = 0;
-
-      /**
-       * @return std::string
-       * @param  index
-       */
-      virtual std::string getVarName (int index ) = 0;
-
-      /**
-       * @return
-       */
-      virtual int getFormulasCount() = 0;
-
-      /**
-       * @return int
-       * @param  data
-       */
-      virtual int getSatsCount (ISatItem *data) = 0;
-
-      /**
-       * @return bool
-       */
-      virtual bool hasError ( ) = 0;
-  };
-
-
   class IObserver {
     public:
       virtual ~IObserver() { }
@@ -178,6 +130,7 @@ namespace FastSatSolver {
   };
 
 
+  class SatProblem;
   class SatSolver:
     public AbstractProcessWatched,
     public ISatSolverStats

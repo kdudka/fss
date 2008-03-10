@@ -1,4 +1,5 @@
 #include <iostream>
+#include "SatProblem.h"
 #include "SatSolver.h"
 
 using FastSatSolver::GenericException;
@@ -11,7 +12,7 @@ using FastSatSolver::TimedStop;
 class SatProblemWrapper {
   public:
     SatProblemWrapper() {
-      this->ptr = SatProblem::create();
+      this->ptr = new (SatProblem);
     }
     ~SatProblemWrapper() {
       delete this->ptr;
