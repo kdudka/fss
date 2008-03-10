@@ -4,6 +4,7 @@
 #include <vector>
 #include <stack>
 #include <list>
+#include "fss.h"
 #include "SatSolver.h"
 #include "Formula.h"
 

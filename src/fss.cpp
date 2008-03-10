@@ -1,4 +1,5 @@
 #include <iostream>
+#include "fss.h"
 #include "SatProblem.h"
 #include "SatSolver.h"
 

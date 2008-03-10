@@ -5,6 +5,7 @@
 #include <vector>
 #include <list>
 #include <map>
+#include "fss.h"
 #include "SatSolver.h"
 #include "Scanner.h"
 #include "Formula.h"
