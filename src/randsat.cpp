@@ -12,6 +12,7 @@ using namespace std;
 
 class RandGenerator {
   public:
+    // Initialize random generator seed
     RandGenerator() {
       // Get system clock
       struct timeval tv;
@@ -24,24 +25,27 @@ class RandGenerator {
 
       // Initialize seed
       this->seed = clk * getpid();
-#ifndef NDEBUG
+#if 0//ndef NDEBUG
       std::cerr << "RandGenerator::RandGenerator(): seed=" << seed << std::endl;
 #endif // NDEBUG
     }
+    // Return random number in interval <0,1)
     float getRand() {
       float rnd = rand_r(&seed);
       return rnd/RAND_MAX;
     }
+    // Return random float in interval <min,max)
     float getRand(float min, float max) {
       float rnd = this->getRand();
       rnd *= max-min;
       rnd += min;
       return rnd;
     }
+    // Return random int in interval <min,max)
     int getRand(int min, int max) {
       float rnd = this->getRand(
           static_cast<float>(min),
-          static_cast<float>(max+1)
+          static_cast<float>(max)
           );
       return static_cast<int>(rnd);
     }
@@ -49,32 +53,50 @@ class RandGenerator {
     unsigned int seed;
 };
 
+/**
+ * USAGE:
+ * ./randsat VARCOUNT FORMSCOUNT
+ */
 int main(int argc, char *argv[]) {
-  if (argc<3)
+  if (argc<3) {
+    std::cerr << "Usage: randsat VARCOUNT FORMSCOUNT" << std::endl;
     return -1;
+  }
 
   const int VARCOUNT = atoi(argv[1]);
   const int FORMSCOUNT = atoi(argv[2]);
-  if (0==VARCOUNT || 0==FORMSCOUNT)
+  if (0==VARCOUNT || 0==FORMSCOUNT) {
+    std::cerr << "Usage: randsat VARCOUNT FORMSCOUNT" << std::endl;
     return -1;
+  }
 
+  // Random numbers generator
   RandGenerator rnd;
+
+  // Variable names
   vector<string> varNames(VARCOUNT);
   for(int i=0; i<VARCOUNT; i++) {
     ostringstream stream;
     stream << "a" << i;
     varNames[i] = stream.str();
   }
+
+  // Binary operators
   vector<string> binopSet;
   binopSet.push_back("AND");
   binopSet.push_back("OR");
   binopSet.push_back("XOR");
 
+  // FA control state
   enum EState {
     S_EXPR,
     S_BINOP
   } state = S_EXPR;
+
+  // count of opened parenthesis
   int lParCount = 0;
+
+  // Generator main loop
   for (int fCount=0; fCount<FORMSCOUNT;) {
     switch (state) {
       case S_EXPR:
@@ -90,7 +112,7 @@ int main(int argc, char *argv[]) {
           break;
         }
         // Random variable
-        std::cout << varNames[rnd.getRand(0, VARCOUNT-1)] << std::flush;
+        std::cout << varNames[rnd.getRand(0, VARCOUNT)] << std::flush;
         state = S_BINOP;
         break;
 
@@ -111,10 +133,11 @@ int main(int argc, char *argv[]) {
           break;
         }
         // Random binary operator
-        std::cout << " " << binopSet[rnd.getRand(0, binopSet.size()-1)] << " " << std::flush;
+        std::cout << " " << binopSet[rnd.getRand(0, binopSet.size())] << " " << std::flush;
         state = S_EXPR;
         break;
     }
   }
+  // new line at end of file generated
   std::cout << std::endl;
 }
