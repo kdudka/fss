@@ -6,11 +6,39 @@
 
 namespace FastSatSolver {
 
-  class Formula : public IFormulaBuilder, public IFormulaEvaluator
+  class IFormulaBuilder
   {
     public:
-      Formula();
-      ~Formula();
+      virtual ~IFormulaBuilder() { }
+
+      /**
+       * @param  token
+       */
+      virtual int parse (Token token ) = 0;
+
+      /**
+       * @return bool
+       */
+      virtual bool isValid ( ) = 0;
+  };
+
+  class IFormulaEvaluator
+  {
+    public:
+      virtual ~IFormulaEvaluator() { }
+
+      /**
+       * @param  data
+       */
+      virtual bool eval (ISatItem *data ) = 0;
+  };
+
+
+  class InterpretedFormula : public IFormulaBuilder, public IFormulaEvaluator
+  {
+    public:
+      InterpretedFormula();
+      ~InterpretedFormula();
 
       /**
        * @param  token

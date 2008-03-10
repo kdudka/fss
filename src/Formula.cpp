@@ -230,27 +230,27 @@ namespace FastSatSolver {
       TContainer container_;
   };
 
-  struct Formula::Private {
+  struct InterpretedFormula::Private {
     ParserStack     parserStack;
     bool            errorDetected;
     CmdList         cmdList;
   };
 
-  Formula::Formula():
-    d(new Formula::Private)
+  InterpretedFormula::InterpretedFormula():
+    d(new Private)
   {
     d->parserStack.push(T_STACK_BOTTOM);
     d->errorDetected = false;
   }
 
-  Formula::~Formula() {
+  InterpretedFormula::~InterpretedFormula() {
     delete d;
   }
 
   /**
    * @param  token
    */
-  int Formula::parse (Token token ) {
+  int InterpretedFormula::parse (Token token ) {
     ParserStack &stack = d->parserStack;
     EToken mode;
     do {
@@ -386,14 +386,14 @@ namespace FastSatSolver {
   /**
    * @return bool
    */
-  bool Formula::isValid ( ) {
+  bool InterpretedFormula::isValid ( ) {
     ParserStack &stack = d->parserStack;
     Token topTerm = stack.topTerm();
     Token top = stack.top();
 #if 0//ndef NDEBUG
-    std::cerr << "Formula::isValid(): topTerm = " << topTerm;
-    std::cerr << "Formula::isValid(): top = " << top;
-    std::cerr << "Formula::isValid(): errorDetected = " << d->errorDetected << std::endl;
+    std::cerr << "InterpretedFormula::isValid(): topTerm = " << topTerm;
+    std::cerr << "InterpretedFormula::isValid(): top = " << top;
+    std::cerr << "InterpretedFormula::isValid(): errorDetected = " << d->errorDetected << std::endl;
     std::cerr << std::endl;
 #endif // NDEBUG
     return
@@ -405,9 +405,9 @@ namespace FastSatSolver {
   /**
    * @param  data
    */
-  bool Formula::eval (ISatItem *data) {
+  bool InterpretedFormula::eval (ISatItem *data) {
     if (!this->isValid())
-      throw GenericException("Formula::eval(): called for invalid formula");
+      throw GenericException("InterpretedFormula::eval(): called for invalid formula");
 
     TRuntimeStack stack;
     d->cmdList.execute(&stack, data);
@@ -416,7 +416,7 @@ namespace FastSatSolver {
     const int stackSize = stack.size();
     if (1!=stackSize) {
       std::ostringstream stream;
-      stream << "Formula::eval(): incorrect stack size after cmdList.execute(): " << stackSize;
+      stream << "InterpretedFormula::eval(): incorrect stack size after cmdList.execute(): " << stackSize;
       throw GenericException(stream.str());
     }
 

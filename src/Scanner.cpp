@@ -144,7 +144,7 @@ namespace FastSatSolver {
   struct ScannerFormulaHandler::Private {
     IScanner            *scanner;
     FormulaContainer    *fc;
-    Formula             *current;
+    InterpretedFormula  *current;
     bool                ignoreToDelim;
   };
   ScannerFormulaHandler::ScannerFormulaHandler (IScanner *scanner, FormulaContainer *fc ):
@@ -153,7 +153,7 @@ namespace FastSatSolver {
     d->scanner = scanner;
     d->fc = fc;
     d->ignoreToDelim = false;
-    d->current = new Formula;
+    d->current = new InterpretedFormula;
   }
   ScannerFormulaHandler::~ScannerFormulaHandler() {
     delete d->current;
@@ -199,7 +199,7 @@ namespace FastSatSolver {
           if (!d->ignoreToDelim && d->current->isValid()) {
             // Formula successfully readed
             d->fc->addFormula(d->current);
-            d->current = new Formula;
+            d->current = new InterpretedFormula;
 #ifndef NDEBUG
             std::cerr << ">>> Formula red successfully" << std::endl;
 #endif // NDEBUG
@@ -216,7 +216,7 @@ namespace FastSatSolver {
           std::cerr << "--- Error recover" << std::endl;
 #endif // NDEBUG
           delete d->current;
-          d->current = new Formula;
+          d->current = new InterpretedFormula;
           if (!d->ignoreToDelim) {
             // Parse error
             token->m_token = T_ERR_PARSE;
