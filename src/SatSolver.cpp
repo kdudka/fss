@@ -51,11 +51,9 @@ namespace FastSatSolver {
     delete d;
   }
   void AbstractProcess::start() {
-    d->running = true;
-    while (d->running) {
+    for(d->running=true; d->running; d->steps++) {
       this->doStep();
       this->notify();
-      d->steps ++;
     }
   }
   void AbstractProcess::stop() {
@@ -78,7 +76,7 @@ namespace FastSatSolver {
     long total;
     long currentElapsed() {
       clock_t diff = clock() - start;
-      return diff / Private::RATIO;
+      return diff/RATIO;
     }
   };
   AbstractProcessWatched::AbstractProcessWatched():
@@ -145,10 +143,16 @@ namespace FastSatSolver {
     assert(0!=stats);
     return stats->getStatsProxy();
   }
+  SatProblem* SatSolver::getProblem() {
+    return d->problem;
+  }
+  SatSolverParameters* SatSolver::getParameters() {
+    return d->params;
+  }
   // protected
   void SatSolver::initialize() {
     delete d->engine;
-    d->engine = new SatSolverEngine(d->problem, d->params);
+    d->engine = new SatSolverEngine(this);
   }
   // protected
   void SatSolver::doStep() {
@@ -161,15 +165,17 @@ namespace FastSatSolver {
   // SatSolverEngine implementation
   struct SatSolverEngine::Private {
     SatProblem                *problem;
+    SatSolver                 *solver;
     GA1DBinaryStringGenome    *genome;
     GASimpleGA                *ga;
     static float fitness(GAGenome &);
   };
-  SatSolverEngine::SatSolverEngine(SatProblem *problem, SatSolverParameters *params):
+  SatSolverEngine::SatSolverEngine(SatSolver *solver):
     d(new Private)
   {
-    d->problem = problem;
-    int genomeLength = problem->getVarsCount();
+    d->problem = solver->getProblem();
+    d->solver = solver;
+    int genomeLength = d->problem->getVarsCount();
     d->genome = new GA1DBinaryStringGenome(genomeLength, Private::fitness, d);
     d->ga = new GASimpleGA(*(d->genome));
   }
@@ -187,6 +193,7 @@ namespace FastSatSolver {
     // Static to non-static connections
     Private *d = reinterpret_cast<Private *>(genome.userData());
     SatProblem *problem = dynamic_cast<SatProblem *>(d->problem);
+    SatSolver *solver = dynamic_cast<SatSolver *>(d->solver);
     const GABinaryString &bs= dynamic_cast<GABinaryString &>(genome);
 
     // Adapter
@@ -204,6 +211,7 @@ namespace FastSatSolver {
     const int satsCount = problem->getSatsCount(&data);
     float fitness = static_cast<float>(satsCount)/formulasCount;
 
+    // TODO: remove next block
 #ifndef NDEBUG
     static float maxFitness = 0.0;
     if (fitness > maxFitness) {
@@ -217,6 +225,10 @@ namespace FastSatSolver {
           std::cerr << ", ";
       }
       std::cerr << ")" << std::endl;
+    }
+    if (formulasCount == satsCount) {
+      std::cerr << ">>> Satisfaction reached, stopping GA..." << std::endl;
+      solver->stop();
     }
 #endif // NDEBUG
 

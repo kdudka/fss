@@ -129,8 +129,9 @@ namespace FastSatSolver {
        * @param  problem
        */
       static SatSolver* create (SatProblem *problem, SatSolverParameters *params);
-
       virtual SatSolverStatsProxy* getStatsProxy();
+      SatProblem* getProblem();
+      SatSolverParameters* getParameters();
 
     protected:
       /**
@@ -149,7 +150,7 @@ namespace FastSatSolver {
 
   class SatSolverEngine: public ISatSolverStats {
     public:
-      SatSolverEngine(SatProblem *problem, SatSolverParameters *params);
+      SatSolverEngine(SatSolver *solver);
       virtual ~SatSolverEngine();
       virtual SatSolverStatsProxy* getStatsProxy();
       void doStep();
