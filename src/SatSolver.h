@@ -6,6 +6,8 @@
 
 class GAGenome;
 class GABinaryString;
+class GAParameterList;
+class GAGeneticAlgorithm;
 class GAStatistics;
 
 namespace FastSatSolver {
@@ -14,17 +16,18 @@ namespace FastSatSolver {
   {
     public:
       virtual ~ISatItem() { }
+      virtual ISatItem* clone() const = 0;
 
       /**
        * @return int
        */
-      virtual int getLength ( ) = 0;
+      virtual int getLength ( ) const = 0;
 
       /**
        * @return bool
        * @param  index
        */
-      virtual bool getBit (int index ) = 0;
+      virtual bool getBit (int index ) const = 0;
   };
 
 
@@ -109,59 +112,26 @@ namespace FastSatSolver {
       Private *d;
   };
 
-
-  // TODO: Define interface
-  class SatSolverParameters;
-
-  class SatSolver;
-  class SatSolverStatsProxy {
-    public:
-      virtual ~SatSolverStatsProxy();
-      const GAStatistics& statistics() const;
-      float getMaxFitness() const;
-      float getAvgFitness() const;
-      float getMinFitness() const;
-      int getGeneration() const;
-      int getTimeElapsed() const;
-    protected:
-      SatSolverStatsProxy(SatSolver *, const GAStatistics &);
-    private:
-      struct Private;
-      Private *d;
-  };
-  std::ostream& operator<< (std::ostream&, const SatSolverStatsProxy &);
-
-  class ISatSolverStats {
-    public:
-      virtual ~ISatSolverStats() { }
-      virtual SatSolverStatsProxy* getStatsProxy() = 0;
-  };
-
-
   class SatProblem;
-  class SatSolver:
-    public AbstractProcessWatched,
-    public ISatSolverStats
+  class GASatSolver: public AbstractProcessWatched
   {
-    friend class SatSolverEngine;
-
     public:
-      virtual ~SatSolver();
+      virtual ~GASatSolver();
 
       /**
        * @return SatProblemSolver*
        * @param  problem
        */
-      static SatSolver* create (SatProblem *problem, SatSolverParameters *params);
-      virtual SatSolverStatsProxy* getStatsProxy();
+      static GASatSolver* create (SatProblem *problem, const GAParameterList &params);
+      static GAParameterList& registerDefaultParameters(GAParameterList &);
+      const GAStatistics& getStatistics() const;
       SatProblem* getProblem();
-      SatSolverParameters* getParameters();
 
     protected:
       /**
        * @param  problem
        */
-      SatSolver (SatProblem *problem, SatSolverParameters *params);
+      GASatSolver (SatProblem *problem, const GAParameterList &params);
 
       virtual void initialize();
       virtual void doStep();
@@ -172,23 +142,49 @@ namespace FastSatSolver {
   };
 
 
-  class SatSolverEngine: public ISatSolverStats {
+  class SatItemVector {
     public:
-      SatSolverEngine(SatSolver *solver);
-      virtual ~SatSolverEngine();
-      virtual SatSolverStatsProxy* getStatsProxy();
-      void doStep();
+      SatItemVector();
+      ~SatItemVector();
+      int getLength();
+      ISatItem* getItem(int index);
+      void addItem(ISatItem *);
+      void writeOut(SatProblem *, std::ostream &streamTo);
     private:
       struct Private;
       Private *d;
   };
 
+  class GASatItem: public ISatItem {
+    public:
+      GASatItem(const GABinaryString &);
+      virtual ~GASatItem();
+      virtual int getLength() const;
+      virtual bool getBit(int) const;
+      virtual GASatItem* clone() const;
+    private:
+      struct Private;
+      Private *d;
+  };
+
+  class GASatItemSet {
+    public:
+      GASatItemSet();
+      ~GASatItemSet();
+      int getLength();
+      void addItem(const GABinaryString &);
+      SatItemVector* createVector();
+    private:
+      struct Private;
+      Private *d;
+  };
 
   class SatItemGalibAdatper: public ISatItem {
     public:
       SatItemGalibAdatper(const GABinaryString &);
-      virtual int getLength();
-      virtual bool getBit(int);
+      virtual int getLength() const;
+      virtual bool getBit(int) const;
+      virtual SatItemGalibAdatper* clone() const;
     private:
       const GABinaryString &bs_;
   };
@@ -207,7 +203,7 @@ namespace FastSatSolver {
 
   class FitnessWatch: public IObserver {
     public:
-      FitnessWatch(ISatSolverStats *statsResource, std::ostream &streamTo);
+      FitnessWatch(GASatSolver *solver, std::ostream &streamTo);
       virtual ~FitnessWatch();
       virtual void notify();
     private:

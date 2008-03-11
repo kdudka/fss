@@ -3,6 +3,8 @@
 #include <iostream>
 #include <iomanip>
 #include <list>
+#include <vector>
+#include <set>
 #include <ga/GA1DBinStrGenome.h>
 #include <ga/GASimpleGA.h>
 #include <ga/GAStatistics.h>
@@ -118,102 +120,79 @@ namespace FastSatSolver {
   }
 
   // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // SatSolver implementation
-  struct SatSolver::Private {
-    SatProblem            *problem;
-    SatSolverParameters   *params;
-    SatSolverEngine       *engine;
+  // GASatSolver implementation
+  struct GASatSolver::Private {
+    SatProblem                *problem;
+    GASatSolver               *solver;
+    GA1DBinaryStringGenome    *genome;
+    GASimpleGA                *ga;
+
+    static float fitness(GAGenome &);
   };
   // protected
-  SatSolver::SatSolver (SatProblem *problem, SatSolverParameters *params):
+  GASatSolver::GASatSolver (SatProblem *problem, const GAParameterList &params):
     d(new Private)
   {
     d->problem = problem;
-    d->params = params;
-    d->engine = 0;
+    d->solver = this;
+    const int varsCount = problem->getVarsCount();
 #ifndef NDEBUG
     std::cout << "<<< Formulas count: " << problem->getFormulasCount() << std::endl;
     std::cout << "<<< Variables count: " << problem->getVarsCount() << std::endl;
     std::cout << "<<< Variables: ";
-    for(int i=0; i< problem->getVarsCount(); i++)
-      std::cout << problem->getVarName(i) << ", ";
-    std::cout << std::endl;
+    for(int i=0; i< varsCount; i++) {
+      std::cout << problem->getVarName(i);
+      if (i==varsCount-1)
+        std::cout << std::endl;
+      else
+        std::cout << ", ";
+    }
 #endif // NDEBUG
-  }
-  SatSolver::~SatSolver() {
-    delete d->engine;
-    delete d;
-  }
-  SatSolver* SatSolver::create (SatProblem *problem, SatSolverParameters *params) {
-    SatSolver *obj = new SatSolver(problem, params);
-    obj->initialize();
-    return obj;
-  }
-  SatSolverStatsProxy* SatSolver::getStatsProxy() {
-    ISatSolverStats *stats = d->engine;
-    assert(0!=stats);
-    return stats->getStatsProxy();
-  }
-  SatProblem* SatSolver::getProblem() {
-    return d->problem;
-  }
-  SatSolverParameters* SatSolver::getParameters() {
-    return d->params;
-  }
-  // protected
-  void SatSolver::initialize() {
-    delete d->engine;
-    d->engine = new SatSolverEngine(this);
-  }
-  // protected
-  void SatSolver::doStep() {
-    SatSolverEngine *engine = d->engine;
-    assert(0!=engine);
-    engine->doStep();
-  }
-
-  // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // SatSolverEngine implementation
-  struct SatSolverEngine::Private {
-    SatProblem                *problem;
-    SatSolver                 *solver;
-    GA1DBinaryStringGenome    *genome;
-    GASimpleGA                *ga;
-    static float fitness(GAGenome &);
-  };
-  SatSolverEngine::SatSolverEngine(SatSolver *solver):
-    d(new Private)
-  {
-    d->problem = solver->getProblem();
-    d->solver = solver;
-    int genomeLength = d->problem->getVarsCount();
-    d->genome = new GA1DBinaryStringGenome(genomeLength, Private::fitness, d);
+    d->genome = new GA1DBinaryStringGenome(varsCount, Private::fitness, d);
     d->ga = new GASimpleGA(*(d->genome));
-    GARandomSeed();
+    d->ga->parameters(params);
+    //d->ga->terminator(GAGeneticAlgorithm::TerminateUponPopConvergence);
   }
-  SatSolverEngine::~SatSolverEngine() {
+  GASatSolver::~GASatSolver() {
     delete d->ga;
     delete d->genome;
     delete d;
   }
-  SatSolverStatsProxy* SatSolverEngine::getStatsProxy() {
-    class ProxyImpl: public SatSolverStatsProxy {
-      public:
-        ProxyImpl(SatSolverEngine::Private *d):
-          SatSolverStatsProxy(d->solver, d->ga->statistics())
-        {
-        }
-    };
-    return new ProxyImpl(d);
+  GASatSolver* GASatSolver::create (SatProblem *problem, const GAParameterList &params) {
+    GASatSolver *obj = new GASatSolver(problem, params);
+    obj->initialize();
+    return obj;
   }
-  void SatSolverEngine::doStep() {
-    d->ga->step();
+  GAParameterList& GASatSolver::registerDefaultParameters(GAParameterList &params) {
+    return GASimpleGA::registerDefaultParameters(params);
   }
-  float SatSolverEngine::Private::fitness(GAGenome &genome) {
+  SatProblem* GASatSolver::getProblem() {
+    return d->problem;
+  }
+  const GAStatistics& GASatSolver::getStatistics() const {
+    return d->ga->statistics();
+  }
+  // protected
+  void GASatSolver::initialize() {
+    GARandomSeed();
+    // TODO
+  }
+  // protected
+  void GASatSolver::doStep() {
+    GAGeneticAlgorithm &ga= *(d->ga);
+    ga.step();
+    if (ga.done()) {
+      this->stop();
+#ifndef NDEBUG
+      std::cerr << ">>> Stopped by GAlib terminator" << std::endl;
+#endif // NDEBUG
+    }
+  }
+  float GASatSolver::Private::fitness(GAGenome &genome) {
     // Static to non-static connections
     Private *d = reinterpret_cast<Private *>(genome.userData());
     SatProblem *problem = dynamic_cast<SatProblem *>(d->problem);
-    SatSolver *solver = dynamic_cast<SatSolver *>(d->solver);
+    GASatSolver *solver = dynamic_cast<GASatSolver *>(d->solver);
     const GABinaryString &bs= dynamic_cast<GABinaryString &>(genome);
 
     // Compute fitness
@@ -233,53 +212,152 @@ namespace FastSatSolver {
   }
 
   // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // SatItemGalibAdatper implementation
-  SatItemGalibAdatper::SatItemGalibAdatper(const GABinaryString &bs): bs_(bs) { }
-  int SatItemGalibAdatper::getLength()        { return bs_.size(); }
-  bool SatItemGalibAdatper::getBit(int index) { return bs_.bit(index); }
+  // GASatItem implementation
+  struct GASatItem::Private {
+    GABinaryString bs;
+
+    Private(const GABinaryString &b): bs(b) { }
+  };
+  GASatItem::GASatItem(const GABinaryString &bs):
+    d(new Private(bs))
+  {
+  }
+  GASatItem::~GASatItem() {
+    delete d;
+  }
+  int GASatItem::getLength() const {
+    return d->bs.size();
+  }
+  bool GASatItem::getBit(int index) const {
+    return d->bs.bit(index);
+  }
+  GASatItem* GASatItem::clone() const {
+    return new GASatItem(d->bs);
+  }
 
 
   // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // SatSolverStatsProxy implementation
-  struct SatSolverStatsProxy::Private {
-    SatSolver     *solver;
-    GAStatistics  stats;
-  };
-  // protected
-  SatSolverStatsProxy::SatSolverStatsProxy(SatSolver *solver, const GAStatistics &stats):
-    d(new Private)
+  // SatItemGalibAdatper implementation
+  SatItemGalibAdatper::SatItemGalibAdatper(const GABinaryString &bs):
+    bs_(bs)
   {
-    d->solver = solver;
-    d->stats.copy(stats);
-    // FIXME: Is this necessary?
-    d->stats.flushScores();
   }
-  SatSolverStatsProxy::~SatSolverStatsProxy() {
-    delete d;
+  int SatItemGalibAdatper::getLength() const {
+    return bs_.size();
   }
-  const GAStatistics& SatSolverStatsProxy::statistics() const {
-    return d->stats;
+  bool SatItemGalibAdatper::getBit(int index) const {
+    return bs_.bit(index);
   }
-  float SatSolverStatsProxy::getMaxFitness() const {
-    return statistics().maxEver();
-  }
-  float SatSolverStatsProxy::getAvgFitness() const {
-    return statistics().offlineMax();
-  }
-  float SatSolverStatsProxy::getMinFitness() const {
-    return statistics().offlineMin();
-  }
-  int SatSolverStatsProxy::getGeneration() const {
-    return statistics().generation();
-  }
-  int SatSolverStatsProxy::getTimeElapsed() const {
-    return d->solver->getTimeElapsed();
-  }
-  std::ostream& operator<< (std::ostream &stream, const SatSolverStatsProxy &proxy) {
-    stream << proxy.statistics();
-    return stream;
+  // FIXME: There is no deep copy (optimalization)
+  SatItemGalibAdatper* SatItemGalibAdatper::clone() const {
+    return new SatItemGalibAdatper(bs_);
   }
 
+
+  // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // SatItemVector implementation
+  struct SatItemVector::Private {
+    typedef std::vector<ISatItem *> TVector;
+    TVector vect;
+  };
+  SatItemVector::SatItemVector():
+    d(new Private)
+  {
+  }
+  SatItemVector::~SatItemVector() {
+    Private::TVector::iterator iter;
+    for(iter=d->vect.begin(); iter!=d->vect.end(); iter++)
+      delete *iter;
+
+    delete d;
+  }
+  int SatItemVector::getLength() {
+    return d->vect.size();
+  }
+  ISatItem* SatItemVector::getItem(int index) {
+    return d->vect[index];
+  }
+  void SatItemVector::addItem(ISatItem *item) {
+    d->vect.push_back(item);
+  }
+  void SatItemVector::writeOut(SatProblem *problem, std::ostream &stream) {
+    const int nForms= this->getLength();
+    const int nVars= problem->getVarsCount();
+    for(int f=0; f<nForms; f++) {
+      stream << std::setw(5) << f << ". ";
+      ISatItem *item= getItem(f);
+      for(int v=0; v<nVars; v++) {
+        stream << problem->getVarName(v) << "=" << item->getBit(v);
+        if (v==nVars-1)
+          stream << std::endl;
+        else
+          stream << ", ";
+      }
+    }
+  }
+
+
+  // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // SatItemSet implementation
+  struct GASatItemSet::Private {
+    class SatItemHashDecorator: public ISatItem {
+      public:
+        SatItemHashDecorator(ISatItem *item):
+          item_(item)
+        {
+        }
+        virtual ~SatItemHashDecorator() {
+          delete item_;
+        }
+        virtual int getLength() const {
+          return item_->getLength();
+        }
+        virtual bool getBit(int index) const {
+          return item_->getBit(index);
+        }
+        virtual ISatItem* clone() const {
+          return item_->clone();
+        }
+        bool operator< (const SatItemHashDecorator &other) const {
+          for(int i=0; i<getLength(); i++) {
+            if (getBit(i) < other.getBit(i))
+              return true;
+          }
+          return false;
+        }
+      private:
+        ISatItem *item_;
+    };
+    typedef std::set<SatItemHashDecorator> TSet;
+    TSet set;
+
+    void addItem(ISatItem *item) {
+      set.insert(SatItemHashDecorator(item));
+    }
+  };
+  GASatItemSet::GASatItemSet():
+    d(new Private)
+  {
+  }
+  GASatItemSet::~GASatItemSet() {
+    delete d;
+  }
+  int GASatItemSet::getLength() {
+    return d->set.size();
+  }
+  void GASatItemSet::addItem(const GABinaryString &bs) {
+    d->addItem(new GASatItem(bs));
+  }
+  SatItemVector* GASatItemSet::createVector() {
+    SatItemVector *vect= new SatItemVector;
+    Private::TSet::iterator iter;
+    for(iter=d->set.begin(); iter!=d->set.end(); iter++) {
+      const Private::SatItemHashDecorator &satItemHasable= *iter;
+      ISatItem *itemClone= satItemHasable.clone();
+      vect->addItem(itemClone);
+    }
+    return vect;
+  }
 
 
   // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -303,38 +381,37 @@ namespace FastSatSolver {
       d->process->stop();
   }
 
+
   // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // FitnessWatch implementation
   struct FitnessWatch::Private {
-    ISatSolverStats *solver;
+    GASatSolver     *solver;
     std::ostream    &stream;
     float           maxFitness;
 
     Private(std::ostream &streamTo): stream(streamTo) { }
   };
-  FitnessWatch::FitnessWatch(ISatSolverStats *statsResource, std::ostream &streamTo):
+  FitnessWatch::FitnessWatch(GASatSolver *solver, std::ostream &streamTo):
     d(new Private(streamTo))
   {
-    d->solver = statsResource;
+    d->solver = solver;
     d->maxFitness = 0.0;
   }
   FitnessWatch::~FitnessWatch() {
     delete d;
   }
   void FitnessWatch::notify() {
-    SatSolverStatsProxy *statsProxy= d->solver->getStatsProxy();
-    float maxFitness = statsProxy->getMaxFitness();
-    if (maxFitness <= d->maxFitness) {
+    GAStatistics stats = d->solver->getStatistics();
+    float maxFitness = stats.maxEver();
+    if (maxFitness <= d->maxFitness)
       // Fitness not changed
-      delete statsProxy;
       return;
-    }
     d->maxFitness = maxFitness;
 
-    const float avgFitness= statsProxy->getAvgFitness();
-    const float minFitness= statsProxy->getMinFitness();
-    const int generation= statsProxy->getGeneration();
-    const float timeElapsed= (statsProxy->getTimeElapsed())/1000.0;
+    const float avgFitness= stats.offlineMax();
+    const float minFitness= stats.offlineMin();
+    const int generation= stats.generation();
+    const float timeElapsed= d->solver->getTimeElapsed()/1000.0;
 
     d->stream
       << "--- satisfaction:" << FixFloatManip(3,1) << maxFitness*100.0 << "%"
@@ -350,12 +427,7 @@ namespace FastSatSolver {
           std::cout << ", ";
       }
       std::cout << ")" << std::endl;*/
-    delete statsProxy;
   }
-    /*if (formulasCount == satsCount) {
-      std::cout << ">>> Satisfaction reached, stopping GA..." << std::endl;
-      solver->stop();*/
-
 
 } // namespace FastSatSolver
 

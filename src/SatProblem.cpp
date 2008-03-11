@@ -102,6 +102,8 @@ namespace FastSatSolver {
     } formulaScan(stringScan.instance(), &fc);
 
     this->parserLoop(formulaScan.instance());
+    if (0==fc.getLength() || 0==vc.getLength())
+      hasError = true;
   }
 
 

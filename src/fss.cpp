@@ -1,15 +1,16 @@
 #include <iostream>
+#include <ga/GAParameter.h>
+#include <ga/GAStatistics.h>
+#include <ga/GASimpleGA.h>
 #include "fss.h"
 #include "SatProblem.h"
 #include "SatSolver.h"
 
 using FastSatSolver::GenericException;
 using FastSatSolver::SatProblem;
-using FastSatSolver::SatSolver;
-using FastSatSolver::SatSolverParameters;
+using FastSatSolver::GASatSolver;
 using FastSatSolver::TimedStop;
 using FastSatSolver::FitnessWatch;
-using FastSatSolver::SatSolverStatsProxy;
 
 // RAII object
 class SatProblemWrapper {
@@ -28,19 +29,19 @@ class SatProblemWrapper {
 };
 
 // RAII object
-class SatSolverWrapper {
+class GASatSolverWrapper {
   public:
-    SatSolverWrapper(SatProblem *problem, SatSolverParameters *params) {
-      this->ptr = SatSolver::create(problem, params);
+    GASatSolverWrapper(SatProblem *problem, const GAParameterList &params) {
+      this->ptr = GASatSolver::create(problem, params);
     }
-    ~SatSolverWrapper() {
+    ~GASatSolverWrapper() {
       delete this->ptr;
     }
-    SatSolver* instance() {
+    GASatSolver* instance() {
       return ptr;
     }
   private:
-    SatSolver *ptr;
+    GASatSolver *ptr;
 };
 
 int main(int argc, char *argv[]) {
@@ -48,26 +49,29 @@ int main(int argc, char *argv[]) {
   SatProblemWrapper sp;
 
   std::cerr << "SatProblem::loadFromInput()...\n";
-  //sp.instance()->loadFromFile(argv[1]);
   sp.instance()->loadFromInput();
   if (sp.instance()->hasError())
     throw GenericException("SatProblem::hasError() returned true)");
 
+  GAParameterList params;
+  std::cerr << "Parsing cmd line:" << std::endl;
+  GASatSolver::registerDefaultParameters(params);
+  params.parse(argc, argv, gaTrue);
+  std::cout << params << std::endl;
   std::cerr << "SatSolver::create(...)\n";
-  SatSolverWrapper satSolverWrapper(sp.instance(), 0);
-  SatSolver *satSolver = satSolverWrapper.instance();
+  GASatSolverWrapper satSolverWrapper(sp.instance(), params);
+  GASatSolver *satSolver = satSolverWrapper.instance();
 
-  TimedStop *timedStop = new TimedStop(satSolver, 60*1000);
+  //TimedStop *timedStop = new TimedStop(satSolver, 10*1000);
   FitnessWatch *fitnessWatch = new FitnessWatch(satSolver, std::cout);
-  satSolver->addObserver(timedStop);
+  //satSolver->addObserver(timedStop);
   satSolver->addObserver(fitnessWatch);
   satSolver->start();
   delete fitnessWatch;
-  delete timedStop;
+  //delete timedStop;
 
-  SatSolverStatsProxy *statsProxy= satSolver->getStatsProxy();
-  std::cout << *statsProxy << std::endl;
-  delete statsProxy;
+  GAStatistics stats= satSolver->getStatistics();
+  std::cout << "--- GA Statistics" << std::endl << stats << std::endl;
 
   return 0;
   }
