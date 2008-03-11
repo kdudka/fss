@@ -113,34 +113,6 @@ namespace FastSatSolver {
   };
 
   class SatProblem;
-  class GASatSolver: public AbstractProcessWatched
-  {
-    public:
-      virtual ~GASatSolver();
-
-      /**
-       * @return SatProblemSolver*
-       * @param  problem
-       */
-      static GASatSolver* create (SatProblem *problem, const GAParameterList &params);
-      static GAParameterList& registerDefaultParameters(GAParameterList &);
-      const GAStatistics& getStatistics() const;
-      SatProblem* getProblem();
-
-    protected:
-      /**
-       * @param  problem
-       */
-      GASatSolver (SatProblem *problem, const GAParameterList &params);
-
-      virtual void initialize();
-      virtual void doStep();
-
-    private:
-      struct Private;
-      Private *d;
-  };
-
 
   class SatItemVector {
     public:
@@ -188,6 +160,38 @@ namespace FastSatSolver {
     private:
       const GABinaryString &bs_;
   };
+
+
+  class GASatSolver: public AbstractProcessWatched
+  {
+    public:
+      virtual ~GASatSolver();
+
+      /**
+       * @return SatProblemSolver*
+       * @param  problem
+       */
+      static GASatSolver* create (SatProblem *problem, const GAParameterList &params);
+      static GAParameterList& registerDefaultParameters(GAParameterList &);
+      const GAStatistics& getStatistics() const;
+      SatProblem* getProblem();
+      SatItemVector* getProgressVector();
+      SatItemVector* getSolutionVector();
+
+    protected:
+      /**
+       * @param  problem
+       */
+      GASatSolver (SatProblem *problem, const GAParameterList &params);
+
+      virtual void initialize();
+      virtual void doStep();
+
+    private:
+      struct Private;
+      Private *d;
+  };
+
 
 
   class TimedStop: public IObserver {

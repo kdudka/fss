@@ -126,6 +126,7 @@ namespace FastSatSolver {
     GASatSolver               *solver;
     GA1DBinaryStringGenome    *genome;
     GASimpleGA                *ga;
+    GASatItemSet              *resultSet;
 
     static float fitness(GAGenome &);
   };
@@ -152,8 +153,10 @@ namespace FastSatSolver {
     d->ga = new GASimpleGA(*(d->genome));
     d->ga->parameters(params);
     //d->ga->terminator(GAGeneticAlgorithm::TerminateUponPopConvergence);
+    d->resultSet = new GASatItemSet;
   }
   GASatSolver::~GASatSolver() {
+    delete d->resultSet;
     delete d->ga;
     delete d->genome;
     delete d;
@@ -172,6 +175,9 @@ namespace FastSatSolver {
   const GAStatistics& GASatSolver::getStatistics() const {
     return d->ga->statistics();
   }
+  SatItemVector* GASatSolver::getSolutionVector() {
+    return d->resultSet->createVector();
+  }
   // protected
   void GASatSolver::initialize() {
     GARandomSeed();
@@ -189,16 +195,20 @@ namespace FastSatSolver {
     }
   }
   float GASatSolver::Private::fitness(GAGenome &genome) {
-    // Static to non-static connections
+    // Static to non-static binding
     Private *d = reinterpret_cast<Private *>(genome.userData());
     SatProblem *problem = dynamic_cast<SatProblem *>(d->problem);
     GASatSolver *solver = dynamic_cast<GASatSolver *>(d->solver);
     const GABinaryString &bs= dynamic_cast<GABinaryString &>(genome);
+    GASatItemSet *resultSet= dynamic_cast<GASatItemSet *>(d->resultSet);
 
     // Compute fitness
     SatItemGalibAdatper data(bs);
     const int formulasCount = problem->getFormulasCount();
     const int satsCount = problem->getSatsCount(&data);
+    if (formulasCount==satsCount)
+      resultSet->addItem(bs);
+
     float fitness = static_cast<float>(satsCount)/formulasCount;
 
     static float maxFitness = 0.0;
@@ -216,11 +226,12 @@ namespace FastSatSolver {
   struct GASatItem::Private {
     GABinaryString bs;
 
-    Private(const GABinaryString &b): bs(b) { }
+    Private(unsigned size): bs(size) { }
   };
   GASatItem::GASatItem(const GABinaryString &bs):
-    d(new Private(bs))
+    d(new Private(bs.size()))
   {
+    d->bs.copy(bs);
   }
   GASatItem::~GASatItem() {
     delete d;
@@ -284,7 +295,7 @@ namespace FastSatSolver {
     const int nForms= this->getLength();
     const int nVars= problem->getVarsCount();
     for(int f=0; f<nForms; f++) {
-      stream << std::setw(5) << f << ". ";
+      stream << std::setw(5) << f+1 << ". ";
       ISatItem *item= getItem(f);
       for(int v=0; v<nVars; v++) {
         stream << problem->getVarName(v) << "=" << item->getBit(v);
@@ -306,7 +317,7 @@ namespace FastSatSolver {
           item_(item)
         {
         }
-        virtual ~SatItemHashDecorator() {
+        void dispose() {
           delete item_;
         }
         virtual int getLength() const {
@@ -332,7 +343,11 @@ namespace FastSatSolver {
     TSet set;
 
     void addItem(ISatItem *item) {
-      set.insert(SatItemHashDecorator(item));
+      SatItemHashDecorator hashableItem(item);
+      if (set.end()==set.find(hashableItem))
+        set.insert(hashableItem);
+      else
+        hashableItem.dispose();
     }
   };
   GASatItemSet::GASatItemSet():
@@ -340,6 +355,12 @@ namespace FastSatSolver {
   {
   }
   GASatItemSet::~GASatItemSet() {
+    Private::TSet::iterator iter;
+    for(iter=d->set.begin(); iter!=d->set.end(); iter++) {
+      Private::SatItemHashDecorator &i= 
+        const_cast<Private::SatItemHashDecorator &>(*iter);
+      i.dispose();
+    }
     delete d;
   }
   int GASatItemSet::getLength() {

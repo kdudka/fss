@@ -11,6 +11,7 @@ using FastSatSolver::SatProblem;
 using FastSatSolver::GASatSolver;
 using FastSatSolver::TimedStop;
 using FastSatSolver::FitnessWatch;
+using FastSatSolver::SatItemVector;
 
 // RAII object
 class SatProblemWrapper {
@@ -49,7 +50,8 @@ int main(int argc, char *argv[]) {
   SatProblemWrapper sp;
 
   std::cerr << "SatProblem::loadFromInput()...\n";
-  sp.instance()->loadFromInput();
+  //sp.instance()->loadFromInput();
+  sp.instance()->loadFromFile("input.txt");
   if (sp.instance()->hasError())
     throw GenericException("SatProblem::hasError() returned true)");
 
@@ -67,6 +69,15 @@ int main(int argc, char *argv[]) {
   //satSolver->addObserver(timedStop);
   satSolver->addObserver(fitnessWatch);
   satSolver->start();
+  SatItemVector *vector= satSolver->getSolutionVector();
+  const int nSolutions = vector->getLength();
+  if (nSolutions) {
+    std::cout << "Found " << nSolutions << " solutions:" << std::endl;
+    vector->writeOut(satSolver->getProblem(), std::cout);
+  }
+
+
+  delete vector;
   delete fitnessWatch;
   //delete timedStop;
 
