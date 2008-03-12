@@ -12,6 +12,7 @@ using std::string;
 using FastSatSolver::GenericException;
 using FastSatSolver::SatProblem;
 using FastSatSolver::AbstractSatSolver;
+using FastSatSolver::BlindSatSolver;
 using FastSatSolver::GASatSolver;
 using FastSatSolver::SolutionsCountStop;
 using FastSatSolver::TimedStop;
@@ -77,8 +78,8 @@ int main(int argc, char *argv[]) {
     SatProblem *problem= spWrapper.instance();
 
     std::cerr << "Loading SAT problem...\n";
-    problem->loadFromInput();
-    //problem->loadFromFile("input.txt");
+    //problem->loadFromInput();
+    problem->loadFromFile("input.txt");
     if (problem->hasError())
       throw GenericException("SatProblem::hasError() returned true)");
 
@@ -88,7 +89,7 @@ int main(int argc, char *argv[]) {
     GASatSolver::registerDefaultParameters(params);
 
     // Default values of parameters
-    const bool FALSE = false;
+    const bool FALSE = FALSE;
     const int DEF_MIN_COUNT_OF_SOLUTIONS =  1;
     const int DEF_MAX_COUNT_OF_SOLUTIONS =  8;
     const int DEF_MAX_COUNT_OF_RUNS =       8;
@@ -169,9 +170,9 @@ int main(int argc, char *argv[]) {
     std::cerr << "Creating solver...\n";
     AbstractSatSolver *solver= 0;
     FitnessWatch *fitnessWatch= 0;
-    /*if (useBlindSolver) {
+    if (useBlindSolver) {
       solver = new BlindSatSolver(problem, stepWidth);
-      }  else*/ {
+      }  else {
       GASatSolver *gaSolver= GASatSolver::create(problem, params);
       fitnessWatch = new FitnessWatch(gaSolver, std::cout);
       gaSolver->addObserver(fitnessWatch);

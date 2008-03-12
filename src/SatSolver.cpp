@@ -133,6 +133,72 @@ namespace FastSatSolver {
   AbstractSatSolver::~AbstractSatSolver() { }
 
 
+  // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // BlindSatSolver implementation
+  struct BlindSatSolver::Private {
+    SatProblem        *problem;
+    int               stepWidth;
+    long              end;
+    long              current;
+    float             maxFitness;
+    SatItemVector     resultSet;
+  };
+  BlindSatSolver::BlindSatSolver(SatProblem *problem, int stepWidth):
+    d(new Private)
+  {
+    // TODO: Check long type usability for desired count of variables!!
+    const int varsCount= problem->getVarsCount();
+    d->problem = problem;
+    d->stepWidth = stepWidth;
+    d->end = 1<<varsCount;
+    d->current = 0;
+    d->maxFitness = 0.0;
+  }
+  BlindSatSolver::~BlindSatSolver() {
+    delete d;
+  }
+  SatProblem* BlindSatSolver::getProblem() {
+    return d->problem;
+  }
+  int BlindSatSolver::getSolutionsCount() {
+    return d->resultSet.getLength();
+  }
+  SatItemVector* BlindSatSolver::getSolutionVector() {
+    return new SatItemVector(d->resultSet);
+  }
+  // protected
+  void BlindSatSolver::initialize() {
+    d->resultSet.clear();
+    d->current = 0;
+    d->maxFitness = 0.0;
+  }
+  // protected
+  void BlindSatSolver::doStep() {
+    const int nVars= d->problem->getVarsCount();
+    const int nForms= d->problem->getFormulasCount();
+    for(int i=0; i< d->stepWidth; i++) {
+      if (d->current >= d->end) {
+        // all space explored
+        std::cerr << "BlindSatSolver::doStep(): done!" << std::endl;
+        this->stop();
+        break;
+      }
+      LongSatItem data(nVars, d->current++);
+      const int nSats= d->problem->getSatsCount(&data);
+      if (nSats == nForms) {
+        // Solution found
+        d->resultSet.addItem(data.clone());
+        this->notify();
+      }
+      const float fitness= static_cast<float>(nSats)/nForms;
+      if (fitness > d->maxFitness) {
+        // maxFitness increased
+        d->maxFitness = fitness;
+        this->notify();
+      }
+    }
+  }
+
 
   // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // GASatSolver implementation
@@ -152,18 +218,6 @@ namespace FastSatSolver {
     d->problem = problem;
     d->solver = this;
     const int varsCount = problem->getVarsCount();
-#ifndef NDEBUG
-    std::cout << "<<< Formulas count: " << problem->getFormulasCount() << std::endl;
-    std::cout << "<<< Variables count: " << problem->getVarsCount() << std::endl;
-    std::cout << "<<< Variables: ";
-    for(int i=0; i< varsCount; i++) {
-      std::cout << problem->getVarName(i);
-      if (i==varsCount-1)
-        std::cout << std::endl;
-      else
-        std::cout << ", ";
-    }
-#endif // NDEBUG
     d->genome = new GA1DBinaryStringGenome(varsCount, Private::fitness, d);
     d->ga = new GASimpleGA(*(d->genome));
     d->ga->parameters(params);
@@ -230,11 +284,13 @@ namespace FastSatSolver {
     SatItemGalibAdatper data(bs);
     const int formulasCount = problem->getFormulasCount();
     const int satsCount = problem->getSatsCount(&data);
+    // TODO: notify()
     if (formulasCount==satsCount)
       resultSet->addItem(bs);
 
     float fitness = static_cast<float>(satsCount)/formulasCount;
 
+    // FIXME: can't use static!!!
     static float maxFitness = 0.0;
     if (fitness > maxFitness) {
       maxFitness = fitness;
@@ -272,6 +328,28 @@ namespace FastSatSolver {
 
 
   // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // LongSatItem implementation
+  LongSatItem::LongSatItem(int length, long fromNumber):
+    length_(length),
+    lNumber_(fromNumber)
+  {
+  }
+  LongSatItem::~LongSatItem() {
+  }
+  int LongSatItem::getLength() const {
+    return length_;
+  }
+  bool LongSatItem::getBit(int index) const {
+    assert(index < length_);
+    return (1<<index) & lNumber_;
+  }
+  LongSatItem* LongSatItem::clone() const {
+    return new LongSatItem(length_, lNumber_);
+  }
+
+
+
+  // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // SatItemGalibAdatper implementation
   SatItemGalibAdatper::SatItemGalibAdatper(const GABinaryString &bs):
     bs_(bs)
@@ -295,28 +373,34 @@ namespace FastSatSolver {
   struct SatItemVector::Private {
     typedef std::vector<ISatItem *> TVector;
     TVector vect;
+
+    Private(unsigned size=0): vect(size) { }
   };
   SatItemVector::SatItemVector():
     d(new Private)
   {
   }
+  SatItemVector::SatItemVector(const SatItemVector &other):
+    d(new Private(other.getLength()))
+  {
+    const int length= other.getLength();
+    for(int i=0; i<length; i++)
+      d->vect[i] = other.getItem(i)->clone();
+  }
   SatItemVector::~SatItemVector() {
-    Private::TVector::iterator iter;
-    for(iter=d->vect.begin(); iter!=d->vect.end(); iter++)
-      delete *iter;
-
+    this->clear();
     delete d;
   }
-  int SatItemVector::getLength() {
+  int SatItemVector::getLength() const {
     return d->vect.size();
   }
-  ISatItem* SatItemVector::getItem(int index) {
+  ISatItem* SatItemVector::getItem(int index) const {
     return d->vect[index];
   }
   void SatItemVector::addItem(ISatItem *item) {
     d->vect.push_back(item);
   }
-  void SatItemVector::writeOut(SatProblem *problem, std::ostream &stream) {
+  void SatItemVector::writeOut(SatProblem *problem, std::ostream &stream) const {
     const int nForms= this->getLength();
     const int nVars= problem->getVarsCount();
     for(int f=0; f<nForms; f++) {
@@ -330,6 +414,12 @@ namespace FastSatSolver {
           stream << ", ";
       }
     }
+  }
+  void SatItemVector::clear() {
+    Private::TVector::iterator iter;
+    for(iter=d->vect.begin(); iter!=d->vect.end(); iter++)
+      delete *iter;
+    d->vect.clear();
   }
 
 

@@ -119,11 +119,11 @@ namespace FastSatSolver {
       SatItemVector();
       SatItemVector(const SatItemVector &);
       ~SatItemVector();
-      int getLength();
-      ISatItem* getItem(int index);
+      int getLength() const;
+      ISatItem* getItem(int index) const;
       void addItem(ISatItem *);
       void clear();
-      void writeOut(SatProblem *, std::ostream &streamTo);
+      void writeOut(SatProblem *, std::ostream &streamTo) const;
     private:
       struct Private;
       Private *d;
@@ -156,13 +156,26 @@ namespace FastSatSolver {
 
   class SatItemGalibAdatper: public ISatItem {
     public:
-      ~SatItemGalibAdatper();
       SatItemGalibAdatper(const GABinaryString &);
+      virtual ~SatItemGalibAdatper();
       virtual int getLength() const;
       virtual bool getBit(int) const;
       virtual SatItemGalibAdatper* clone() const;
     private:
       const GABinaryString &bs_;
+  };
+
+
+  class LongSatItem: public ISatItem {
+    public:
+      LongSatItem(int length, long fromNumber);
+      virtual ~LongSatItem();
+      virtual int getLength() const;
+      virtual bool getBit(int index) const;
+      virtual LongSatItem* clone() const;
+    private:
+      int  length_;
+      long lNumber_;
   };
 
 
@@ -225,6 +238,7 @@ namespace FastSatSolver {
        * @param  problem
        */
       virtual SatProblem* getProblem();
+      virtual int getSolutionsCount();
       virtual SatItemVector* getSolutionVector();
 
     protected:
@@ -253,7 +267,6 @@ namespace FastSatSolver {
       SolutionsCountStop(AbstractSatSolver *solver, int minCountOfSolutions);
       virtual ~SolutionsCountStop();
       virtual void notify();
-      void reset();
     private:
       struct Private;
       Private *d;
