@@ -120,6 +120,13 @@ namespace FastSatSolver {
   }
 
   // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // AbstractSatSolver implementation
+  AbstractSatSolver::AbstractSatSolver() { }
+  AbstractSatSolver::~AbstractSatSolver() { }
+
+
+
+  // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // GASatSolver implementation
   struct GASatSolver::Private {
     SatProblem                *problem;
@@ -152,7 +159,10 @@ namespace FastSatSolver {
     d->genome = new GA1DBinaryStringGenome(varsCount, Private::fitness, d);
     d->ga = new GASimpleGA(*(d->genome));
     d->ga->parameters(params);
-    //d->ga->terminator(GAGeneticAlgorithm::TerminateUponPopConvergence);
+    bool termUponConvergence = false;
+    params.get("term_upon_convergence", &termUponConvergence);
+    if (termUponConvergence)
+      d->ga->terminator(GAGeneticAlgorithm::TerminateUponPopConvergence);
     d->resultSet = new GASatItemSet;
   }
   GASatSolver::~GASatSolver() {
@@ -166,8 +176,10 @@ namespace FastSatSolver {
     obj->initialize();
     return obj;
   }
-  GAParameterList& GASatSolver::registerDefaultParameters(GAParameterList &params) {
-    return GASimpleGA::registerDefaultParameters(params);
+  void GASatSolver::registerDefaultParameters(GAParameterList &params) {
+    GASimpleGA::registerDefaultParameters(params);
+    const bool FALSE = false;
+    params.add("term_upon_convergence", "convterm", GAParameter::BOOLEAN, &FALSE);
   }
   SatProblem* GASatSolver::getProblem() {
     return d->problem;
@@ -253,6 +265,7 @@ namespace FastSatSolver {
     bs_(bs)
   {
   }
+  SatItemGalibAdatper::~SatItemGalibAdatper() { }
   int SatItemGalibAdatper::getLength() const {
     return bs_.size();
   }
@@ -441,13 +454,6 @@ namespace FastSatSolver {
       << ", generation " << std::setw(5) << generation
       << ", time elapsed: " << FixFloatManip(5,2) << timeElapsed << " s"
       << std::endl;
-      /*const int varsCount = problem->getVarsCount();
-      for (int i=0; i<varsCount; i++) {
-        std::cout << problem->getVarName(i) << "=" << data.getBit(i);
-        if (i != varsCount-1)
-          std::cout << ", ";
-      }
-      std::cout << ")" << std::endl;*/
   }
 
 } // namespace FastSatSolver

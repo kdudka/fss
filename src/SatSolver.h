@@ -117,6 +117,7 @@ namespace FastSatSolver {
   class SatItemVector {
     public:
       SatItemVector();
+      SatItemVector(const SatItemVector &);
       ~SatItemVector();
       int getLength();
       ISatItem* getItem(int index);
@@ -153,6 +154,7 @@ namespace FastSatSolver {
 
   class SatItemGalibAdatper: public ISatItem {
     public:
+      ~SatItemGalibAdatper();
       SatItemGalibAdatper(const GABinaryString &);
       virtual int getLength() const;
       virtual bool getBit(int) const;
@@ -162,7 +164,23 @@ namespace FastSatSolver {
   };
 
 
-  class GASatSolver: public AbstractProcessWatched
+  class AbstractSatSolver: public AbstractProcessWatched
+  {
+    public:
+      virtual ~AbstractSatSolver();
+      virtual SatProblem* getProblem() = 0;
+      virtual SatItemVector* getSolutionVector() = 0;
+
+    protected:
+      AbstractSatSolver();
+
+    private:
+      struct Private;
+      Private *d;
+  };
+
+
+  class GASatSolver: public AbstractSatSolver
   {
     public:
       virtual ~GASatSolver();
@@ -172,11 +190,10 @@ namespace FastSatSolver {
        * @param  problem
        */
       static GASatSolver* create (SatProblem *problem, const GAParameterList &params);
-      static GAParameterList& registerDefaultParameters(GAParameterList &);
+      static void registerDefaultParameters(GAParameterList &);
       const GAStatistics& getStatistics() const;
-      SatProblem* getProblem();
-      SatItemVector* getProgressVector();
-      SatItemVector* getSolutionVector();
+      virtual SatProblem* getProblem();
+      virtual SatItemVector* getSolutionVector();
 
     protected:
       /**
@@ -193,11 +210,44 @@ namespace FastSatSolver {
   };
 
 
+  class BlindSatSolver: public AbstractSatSolver
+  {
+    public:
+      BlindSatSolver(SatProblem *problem, int stepWidth);
+      virtual ~BlindSatSolver();
+
+      /**
+       * @return SatProblemSolver*
+       * @param  problem
+       */
+      virtual SatProblem* getProblem();
+      virtual SatItemVector* getSolutionVector();
+
+    protected:
+      virtual void initialize();
+      virtual void doStep();
+
+    private:
+      struct Private;
+      Private *d;
+  };
+
 
   class TimedStop: public IObserver {
     public:
       TimedStop(AbstractProcessWatched *process, long msec);
       virtual ~TimedStop();
+      virtual void notify();
+    private:
+      struct Private;
+      Private *d;
+  };
+
+
+  class SolutionsCountStop: public IObserver {
+    public:
+      SolutionsCountStop(AbstractSatSolver *solver, int minCountOfSolutions);
+      virtual ~SolutionsCountStop();
       virtual void notify();
     private:
       struct Private;
