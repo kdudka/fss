@@ -174,12 +174,16 @@ namespace FastSatSolver {
   }
   // protected
   void BlindSatSolver::doStep() {
+    std::cerr << "BlindSatSolver::doStep()\n";
     const int nVars= d->problem->getVarsCount();
     const int nForms= d->problem->getFormulasCount();
-    for(int i=0; i< d->stepWidth; i++) {
+    const int countPerStep = 1 << d->stepWidth;
+    for(int i=0; i< countPerStep; i++) {
       if (d->current >= d->end) {
         // all space explored
-        std::cerr << "BlindSatSolver::doStep(): done!" << std::endl;
+#ifndef NDEBUG
+        std::cerr << std::endl << "BlindSatSolver::doStep(): done!" << std::endl << std::endl;
+#endif // NDEBUG
         this->stop();
         break;
       }
@@ -188,15 +192,25 @@ namespace FastSatSolver {
       if (nSats == nForms) {
         // Solution found
         d->resultSet.addItem(data.clone());
+#ifndef NDEBUG
+        std::cout << std::endl << "--- solution found" << std::flush;
+#endif // NDEBUG
         this->notify();
       }
       const float fitness= static_cast<float>(nSats)/nForms;
       if (fitness > d->maxFitness) {
         // maxFitness increased
         d->maxFitness = fitness;
+#ifndef NDEBUG
+        std::cout << ">" << std::flush;
+#endif // NDEBUG
         this->notify();
       }
     }
+#ifndef NDEBUG
+    if (d->current < d->end)
+      std::cout << "." << std::flush;
+#endif // NDEBUG
   }
 
 
@@ -205,6 +219,7 @@ namespace FastSatSolver {
   struct GASatSolver::Private {
     SatProblem                *problem;
     GASatSolver               *solver;
+    float                     maxFitness;
     GA1DBinaryStringGenome    *genome;
     GASimpleGA                *ga;
     GASatItemSet              *resultSet;
@@ -217,6 +232,7 @@ namespace FastSatSolver {
   {
     d->problem = problem;
     d->solver = this;
+    d->maxFitness = 0.0;
     const int varsCount = problem->getVarsCount();
     d->genome = new GA1DBinaryStringGenome(varsCount, Private::fitness, d);
     d->ga = new GASimpleGA(*(d->genome));
@@ -258,6 +274,7 @@ namespace FastSatSolver {
   // protected
   void GASatSolver::initialize() {
     GARandomSeed();
+    d->maxFitness = 0.0;
     d->ga->initialize();
     d->resultSet->clear();
   }
@@ -284,16 +301,14 @@ namespace FastSatSolver {
     SatItemGalibAdatper data(bs);
     const int formulasCount = problem->getFormulasCount();
     const int satsCount = problem->getSatsCount(&data);
-    // TODO: notify()
-    if (formulasCount==satsCount)
+    if (formulasCount==satsCount) {
       resultSet->addItem(bs);
+      solver->notify();
+    };
 
     float fitness = static_cast<float>(satsCount)/formulasCount;
-
-    // FIXME: can't use static!!!
-    static float maxFitness = 0.0;
-    if (fitness > maxFitness) {
-      maxFitness = fitness;
+    if (fitness > d->maxFitness) {
+      d->maxFitness = fitness;
       solver->notify();
     }
 

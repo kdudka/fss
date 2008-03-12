@@ -78,8 +78,8 @@ int main(int argc, char *argv[]) {
     SatProblem *problem= spWrapper.instance();
 
     std::cerr << "Loading SAT problem...\n";
-    //problem->loadFromInput();
-    problem->loadFromFile("input.txt");
+    problem->loadFromInput();
+    //problem->loadFromFile("input.txt");
     if (problem->hasError())
       throw GenericException("SatProblem::hasError() returned true)");
 
@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
     GASatSolver::registerDefaultParameters(params);
 
     // Default values of parameters
-    const bool FALSE = FALSE;
+    const bool FALSE = false;
     const int DEF_MIN_COUNT_OF_SOLUTIONS =  1;
     const int DEF_MAX_COUNT_OF_SOLUTIONS =  8;
     const int DEF_MAX_COUNT_OF_RUNS =       8;
@@ -106,7 +106,7 @@ int main(int argc, char *argv[]) {
 
     // parse using GAParameterList class
     params.parse(argc, argv, gaTrue);
-    // TODO: Remove next line
+    // TODO: Remove next line?
     std::cout << params;
 
     // true for blind solver, false for GA solver
@@ -191,6 +191,7 @@ int main(int argc, char *argv[]) {
 
     SatItemVector *results= 0;
     int nSolutions = 0;
+    float timeTotal = 0.0;
     for(int i=0; i<maxRuns; i++) {
       if (1<maxRuns)
         std::cout << ">>> Run" << std::setw(4) << i+1 << " of" << std::setw(4) << maxRuns << std::endl;
@@ -202,10 +203,13 @@ int main(int argc, char *argv[]) {
       results= solver->getSolutionVector();
       nSolutions= results->getLength();
       const float timeElapsed= solver->getTimeElapsed()/1000.0;
+      timeTotal+= timeElapsed;
       std::cout
         << "<<< Found " << nSolutions << " solutions"
-        << " in " << std::fixed << std::setw(5) << std::setprecision(2) << timeElapsed << " s"
-        << std::endl;
+        << " in " << std::fixed << std::setw(5) << std::setprecision(2) << timeElapsed << " s";
+      if (1<maxRuns && i)
+        std::cout << " (" << std::fixed << std::setw(5) << std::setprecision(2) << timeTotal << " s total)";
+      std::cout << std::endl;
       if (nSolutions >= minSlns)
         break;
       std::cout << std::endl;
