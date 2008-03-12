@@ -122,6 +122,7 @@ namespace FastSatSolver {
       int getLength();
       ISatItem* getItem(int index);
       void addItem(ISatItem *);
+      void clear();
       void writeOut(SatProblem *, std::ostream &streamTo);
     private:
       struct Private;
@@ -147,6 +148,7 @@ namespace FastSatSolver {
       int getLength();
       void addItem(const GABinaryString &);
       SatItemVector* createVector();
+      void clear();
     private:
       struct Private;
       Private *d;
@@ -169,6 +171,7 @@ namespace FastSatSolver {
     public:
       virtual ~AbstractSatSolver();
       virtual SatProblem* getProblem() = 0;
+      virtual int getSolutionsCount() = 0;
       virtual SatItemVector* getSolutionVector() = 0;
 
     protected:
@@ -193,6 +196,7 @@ namespace FastSatSolver {
       static void registerDefaultParameters(GAParameterList &);
       const GAStatistics& getStatistics() const;
       virtual SatProblem* getProblem();
+      virtual int getSolutionsCount();
       virtual SatItemVector* getSolutionVector();
 
     protected:
@@ -249,6 +253,7 @@ namespace FastSatSolver {
       SolutionsCountStop(AbstractSatSolver *solver, int minCountOfSolutions);
       virtual ~SolutionsCountStop();
       virtual void notify();
+      void reset();
     private:
       struct Private;
       Private *d;
@@ -260,6 +265,7 @@ namespace FastSatSolver {
       FitnessWatch(GASatSolver *solver, std::ostream &streamTo);
       virtual ~FitnessWatch();
       virtual void notify();
+      void reset();
     private:
       struct Private;
       Private *d;

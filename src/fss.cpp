@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <ga/GAParameter.h>
 #include <ga/GAStatistics.h>
@@ -12,6 +13,7 @@ using FastSatSolver::GenericException;
 using FastSatSolver::SatProblem;
 using FastSatSolver::AbstractSatSolver;
 using FastSatSolver::GASatSolver;
+using FastSatSolver::SolutionsCountStop;
 using FastSatSolver::TimedStop;
 using FastSatSolver::FitnessWatch;
 using FastSatSolver::SatItemVector;
@@ -75,8 +77,8 @@ int main(int argc, char *argv[]) {
     SatProblem *problem= spWrapper.instance();
 
     std::cerr << "Loading SAT problem...\n";
-    //sp.instance()->loadFromInput();
-    problem->loadFromFile("input.txt");
+    problem->loadFromInput();
+    //problem->loadFromFile("input.txt");
     if (problem->hasError())
       throw GenericException("SatProblem::hasError() returned true)");
 
@@ -87,11 +89,11 @@ int main(int argc, char *argv[]) {
 
     // Default values of parameters
     const bool FALSE = false;
-    const int DEF_MIN_COUNT_OF_SOLUTIONS = 1;
-    const int DEF_MAX_COUNT_OF_SOLUTIONS = 100;
-    const int DEF_MAX_COUNT_OF_RUNS = 100;
-    const int DEF_MAX_TIME_PER_RUN = 0;
-    const int DEF_STEP_WIDTH = 16;
+    const int DEF_MIN_COUNT_OF_SOLUTIONS =  1;
+    const int DEF_MAX_COUNT_OF_SOLUTIONS =  8;
+    const int DEF_MAX_COUNT_OF_RUNS =       8;
+    const int DEF_MAX_TIME_PER_RUN =        0;
+    const int DEF_STEP_WIDTH =              16;
 
     // Register extra parameters
     params.add("blind_solver",            "blind",    GAParameter::BOOLEAN,     &FALSE);
@@ -154,8 +156,8 @@ int main(int argc, char *argv[]) {
       // exclude parameters for blind solver
       if (maxRuns != DEF_MAX_COUNT_OF_RUNS) {
         error("Parameter 'max_count_of_runs' is irrelevant for blind solver");
-        maxRuns = DEF_MAX_COUNT_OF_RUNS;
       }
+      maxRuns = 1;
     } else {
       // exclude parameters for GA solver
       if (stepWidth != DEF_STEP_WIDTH) {
@@ -172,9 +174,13 @@ int main(int argc, char *argv[]) {
       }  else*/ {
       GASatSolver *gaSolver= GASatSolver::create(problem, params);
       fitnessWatch = new FitnessWatch(gaSolver, std::cout);
+      gaSolver->addObserver(fitnessWatch);
       solver = gaSolver;
     }
     SatSolverDestructor solverDestructor(solver);
+
+    SolutionsCountStop *maxSlnsStop= new SolutionsCountStop(solver, maxSlns);
+    solver->addObserver(maxSlnsStop);
 
     TimedStop *timedStop = 0;
     if (maxTime) {
@@ -182,14 +188,29 @@ int main(int argc, char *argv[]) {
       solver->addObserver(timedStop);
     }
 
-    solver->addObserver(fitnessWatch);
-    solver->start();
-    SatItemVector *vector= solver->getSolutionVector();
-    const int nSolutions = vector->getLength();
-    if (nSolutions) {
-      std::cout << "Found " << nSolutions << " solutions:" << std::endl;
-      vector->writeOut(solver->getProblem(), std::cout);
+    SatItemVector *results= 0;
+    int nSolutions = 0;
+    for(int i=0; i<maxRuns; i++) {
+      if (1<maxRuns)
+        std::cout << ">>> Run" << std::setw(4) << i+1 << " of" << std::setw(4) << maxRuns << std::endl;
+      solver->reset();
+      if (fitnessWatch)
+        fitnessWatch->reset();
+      solver->start();
+      delete results;
+      results= solver->getSolutionVector();
+      nSolutions= results->getLength();
+      const float timeElapsed= solver->getTimeElapsed()/1000.0;
+      std::cout
+        << "<<< Found " << nSolutions << " solutions"
+        << " in " << std::fixed << std::setw(5) << std::setprecision(2) << timeElapsed << " s"
+        << std::endl;
+      if (nSolutions >= minSlns)
+        break;
+      std::cout << std::endl;
     }
+    if (nSolutions >= minSlns)
+      results->writeOut(solver->getProblem(), std::cout);
 
     if (!useBlindSolver) {
       GASatSolver *gaSolver= dynamic_cast<GASatSolver *>(solver);
@@ -197,9 +218,10 @@ int main(int argc, char *argv[]) {
       std::cout << "--- GA Statistics" << std::endl << stats << std::endl;
     }
 
-    delete vector;
+    delete results;
     delete fitnessWatch;
     delete timedStop;
+    delete maxSlnsStop;
 
     return 0;
   }

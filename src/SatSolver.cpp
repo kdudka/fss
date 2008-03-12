@@ -87,6 +87,7 @@ namespace FastSatSolver {
     static const long RATIO = CLOCKS_PER_SEC/1000L;
     clock_t start;
     long total;
+    bool running;
     long currentElapsed() {
       clock_t diff = clock() - start;
       return diff/RATIO;
@@ -96,27 +97,34 @@ namespace FastSatSolver {
     d(new Private)
   {
     d->total = 0;
+    d->running = false;
   }
   AbstractProcessWatched::~AbstractProcessWatched() {
     delete d;
   }
   void AbstractProcessWatched::start() {
     d->start = clock();
+    d->running = true;
     // Delegate to base
     AbstractProcess::start();
   }
   void AbstractProcessWatched::stop() {
+    d->running = false;
     d->total += d->currentElapsed();
     // Delegate to base
     AbstractProcess::stop();
   }
   void AbstractProcessWatched::reset() {
+    d->running = false;
     d->total = 0;
     // Delegate to base
     AbstractProcess::reset();
   }
   long AbstractProcessWatched::getTimeElapsed() {
-    return d->total + d->currentElapsed();
+    long total = d->total;
+    if (d->running)
+      total+= d->currentElapsed();
+    return total;
   }
 
   // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -187,13 +195,17 @@ namespace FastSatSolver {
   const GAStatistics& GASatSolver::getStatistics() const {
     return d->ga->statistics();
   }
+  int GASatSolver::getSolutionsCount() {
+    return d->resultSet->getLength();
+  }
   SatItemVector* GASatSolver::getSolutionVector() {
     return d->resultSet->createVector();
   }
   // protected
   void GASatSolver::initialize() {
     GARandomSeed();
-    // TODO
+    d->ga->initialize();
+    d->resultSet->clear();
   }
   // protected
   void GASatSolver::doStep() {
@@ -201,7 +213,7 @@ namespace FastSatSolver {
     ga.step();
     if (ga.done()) {
       this->stop();
-#ifndef NDEBUG
+#if 0//ndef NDEBUG
       std::cerr << ">>> Stopped by GAlib terminator" << std::endl;
 #endif // NDEBUG
     }
@@ -368,12 +380,7 @@ namespace FastSatSolver {
   {
   }
   GASatItemSet::~GASatItemSet() {
-    Private::TSet::iterator iter;
-    for(iter=d->set.begin(); iter!=d->set.end(); iter++) {
-      Private::SatItemHashDecorator &i= 
-        const_cast<Private::SatItemHashDecorator &>(*iter);
-      i.dispose();
-    }
+    this->clear();
     delete d;
   }
   int GASatItemSet::getLength() {
@@ -391,6 +398,37 @@ namespace FastSatSolver {
       vect->addItem(itemClone);
     }
     return vect;
+  }
+  void GASatItemSet::clear() {
+    Private::TSet::iterator iter;
+    for(iter=d->set.begin(); iter!=d->set.end(); iter++) {
+      Private::SatItemHashDecorator &i= 
+        const_cast<Private::SatItemHashDecorator &>(*iter);
+      i.dispose();
+    }
+    d->set.clear();
+  }
+
+
+  // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // SolutionsCountStop implementation
+  struct SolutionsCountStop::Private {
+    AbstractSatSolver *solver;
+    int               minCountOfSolutions;
+  };
+  SolutionsCountStop::SolutionsCountStop(AbstractSatSolver *solver, int minCountOfSolutions):
+    d(new Private)
+  {
+    d->solver = solver;
+    d->minCountOfSolutions = minCountOfSolutions;
+  }
+  SolutionsCountStop::~SolutionsCountStop() {
+    delete d;
+  }
+  void SolutionsCountStop::notify() {
+    const int nSolutions= d->solver->getSolutionsCount();
+    if (nSolutions >= d->minCountOfSolutions)
+      d->solver->stop();
   }
 
 
@@ -454,6 +492,9 @@ namespace FastSatSolver {
       << ", generation " << std::setw(5) << generation
       << ", time elapsed: " << FixFloatManip(5,2) << timeElapsed << " s"
       << std::endl;
+  }
+  void FitnessWatch::reset() {
+    d->maxFitness = 0.0;
   }
 
 } // namespace FastSatSolver
