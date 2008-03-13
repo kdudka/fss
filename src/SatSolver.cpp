@@ -174,7 +174,6 @@ namespace FastSatSolver {
   }
   // protected
   void BlindSatSolver::doStep() {
-    std::cerr << "BlindSatSolver::doStep()\n";
     const int nVars= d->problem->getVarsCount();
     const int nForms= d->problem->getFormulasCount();
     const int countPerStep = 1 << d->stepWidth;
@@ -276,7 +275,8 @@ namespace FastSatSolver {
     GARandomSeed();
     d->maxFitness = 0.0;
     d->ga->initialize();
-    d->resultSet->clear();
+    // Now using incremental strategy
+    // d->resultSet->clear();
   }
   // protected
   void GASatSolver::doStep() {
@@ -461,8 +461,10 @@ namespace FastSatSolver {
         }
         bool operator< (const SatItemHashDecorator &other) const {
           for(int i=0; i<getLength(); i++) {
-            if (getBit(i) < other.getBit(i))
+            if (!getBit(i) && other.getBit(i))
               return true;
+            else if (getBit(i) && !other.getBit(i))
+              return false;
           }
           return false;
         }
