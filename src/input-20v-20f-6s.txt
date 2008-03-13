@@ -1,0 +1,21 @@
+~a8 OR (a0 XOR (~~a19 AND (a12)));
+a17;
+a9 AND a1;
+a3 OR a9 XOR (~a18 XOR (a1 AND (a3 XOR (a9 OR a5 XOR (a19)))));
+a0 AND a5 OR a1 OR ~a17 OR (~a7 XOR a5);
+~~a11 OR ~a5 AND (a9 OR (a2 AND a14));
+(((~~a4 OR ~a2 AND a7 OR a15 OR a10 XOR (a19 OR ~a3) OR ~a1 OR a8 OR a19 AND ~a15 OR ~a4 XOR a1) XOR ~(~~a2 AND a15 XOR (a16) XOR a13 AND a14 XOR a17 XOR a6 AND a10 OR ~~a9 AND a10)));
+~~((a5 XOR (~a16 OR a4 OR a4 AND a3 OR ((a14 AND ~a13 XOR a0) OR ~a4) XOR a16)));
+(~(~~a17 OR a11 XOR ~(a11)));
+(a3 XOR a8 OR ~(a14 XOR ~a10 OR a13 OR a19 XOR (a15 OR a18)));
+((a3 AND a3));
+(a15 AND a15 XOR ~~a15 XOR a6 OR ~~a11 OR a5 OR a18 OR a17 AND a18 XOR a6 OR ~~a13 XOR (~~(a16 AND a15 XOR a13 AND ~~(a14 OR a12) AND a17) AND a10));
+(~~(a15 XOR a12 XOR (a2 OR ~(~a8 OR a0 AND ~~a8 OR (a17 AND ~a9 XOR a3)))));
+~a4 OR a8;
+a17 OR ~(~~(a10 AND a16 AND a17 OR ~~a15 XOR (a9)));
+~~((((~~a13 OR a3 AND a0))));
+~a18 XOR ~a0 XOR a13 XOR a15 XOR ~a12 AND (~((a14 XOR ~(~a17))));
+(a11 XOR ~a6 OR ~a16 AND a18 XOR ~~(~a12 XOR a6 AND a3 XOR ((~~(~a10 AND ~a15 OR a14) OR ~~~a6 AND (~a16 OR a11 XOR ~~a16 AND ~a12 OR a3 XOR a6 AND a4)))));
+a0 AND ~(~~~a19 AND ((a6 OR a18) OR (a11 AND a5 XOR a11 AND a13 OR (~(a15)) XOR (a18 AND a19 XOR a9 OR a0 AND a14))));
+((a8 OR a9 OR ~~(a13 OR a19 AND a5 OR a19 XOR a12 OR a13 AND a14 XOR a19 XOR ~(a2 AND a11 OR (a2 AND a3 XOR ~a14 AND ~a0 XOR a0 OR ~a13 OR a6 AND a1)) OR a9 AND ~a2) OR ~~(a3 XOR ~(a15 AND ~a4 AND a13))));
+

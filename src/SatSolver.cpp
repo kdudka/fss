@@ -188,6 +188,7 @@ namespace FastSatSolver {
       }
       LongSatItem data(nVars, d->current++);
       const int nSats= d->problem->getSatsCount(&data);
+      const float fitness= static_cast<float>(nSats)/nForms;
       if (nSats == nForms) {
         // Solution found
         d->resultSet.addItem(data.clone());
@@ -195,9 +196,7 @@ namespace FastSatSolver {
         std::cout << std::endl << "--- solution found" << std::flush;
 #endif // NDEBUG
         this->notify();
-      }
-      const float fitness= static_cast<float>(nSats)/nForms;
-      if (fitness > d->maxFitness) {
+      } else if (fitness > d->maxFitness) {
         // maxFitness increased
         d->maxFitness = fitness;
 #ifndef NDEBUG

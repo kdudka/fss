@@ -216,8 +216,8 @@ int main(int argc, char *argv[]) {
         break;
       std::cout << std::endl;
     }
-    if (totalSolutions >= minSlns)
-      results->writeOut(solver->getProblem(), std::cout);
+    //if (totalSolutions >= minSlns)
+    results->writeOut(solver->getProblem(), std::cout);
 
     if (!useBlindSolver) {
       GASatSolver *gaSolver= dynamic_cast<GASatSolver *>(solver);
