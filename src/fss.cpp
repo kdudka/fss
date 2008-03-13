@@ -82,6 +82,19 @@ int main(int argc, char *argv[]) {
     //problem->loadFromFile("input.txt");
     if (problem->hasError())
       throw GenericException("SatProblem::hasError() returned true)");
+#ifndef NDEBUG
+    const int varsCount = problem->getVarsCount();
+    std::cout << (char)033 << "[1;33m--- Formulas count: " << (char)033 << "[1;32m" << problem->getFormulasCount() << std::endl;
+    std::cout << (char)033 << "[1;33m--- Variables count: " << (char)033 << "[1;32m"  << varsCount << std::endl;
+    std::cout << (char)033 << "[1;33m--- Variables: " << (char)033 << "[0m";
+    for(int i=0; i< varsCount; i++) {
+      std::cout  << (char)033 << "[1;32m" << problem->getVarName(i) << (char)033 << "[0m";
+      if (i==varsCount-1)
+        std::cout << (char)033 << "[0m" << std::endl;
+      else
+        std::cout << ", ";
+    }
+#endif // NDEBUG
 
     // Parse cmd-line parameters
     GAParameterList params;
@@ -107,7 +120,8 @@ int main(int argc, char *argv[]) {
     // parse using GAParameterList class
     params.parse(argc, argv, gaTrue);
     // TODO: Remove next line?
-    std::cout << params;
+    std::cout << (char)033 << "[1;36m" << params;
+    std::cout << (char)033 << "[0m" << std::endl;
 
     // true for blind solver, false for GA solver
     bool useBlindSolver= false;
@@ -194,7 +208,7 @@ int main(int argc, char *argv[]) {
     float timeTotal = 0.0;
     for(int i=0; i<maxRuns; i++) {
       if (1<maxRuns)
-        std::cout << ">>> Run" << std::setw(4) << i+1 << " of" << std::setw(4) << maxRuns << std::endl;
+        std::cout << (char)033 << "[1;32m>>> Run" << std::setw(4) << i+1 << " of" << std::setw(4) << maxRuns << (char)033 << "[0m" << std::endl;
       solver->reset();
       if (fitnessWatch)
         fitnessWatch->reset();
@@ -206,18 +220,19 @@ int main(int argc, char *argv[]) {
       const float timeElapsed= solver->getTimeElapsed()/1000.0;
       timeTotal+= timeElapsed;
       std::cout
-        << "<<< Found " << runSolutions << " solutions"
-        << " in " << std::fixed << std::setw(5) << std::setprecision(2) << timeElapsed << " s";
+        << (char)033 << "[1;32m<<< Found" << std::setw(5) << runSolutions << " solutions"
+        << " in " << std::fixed << std::setw(5) << std::setprecision(2) << timeElapsed << " s" << (char)033 << "[0m" << std::endl;
       if (1<maxRuns) std::cout
-        << " (total " << totalSolutions << " solutions"
-        << " in " << std::fixed << std::setw(5) << std::setprecision(2) << timeTotal << " s)";
-    std::cout << std::endl;
+        << (char)033 << "[1;31m<<< Total" << std::setw(5) << totalSolutions << " solutions"
+        << " in " << std::fixed << std::setw(5) << std::setprecision(2) << timeTotal << " s" << (char)033 << "[0m" << std::endl;
       if (totalSolutions >= minSlns)
         break;
       std::cout << std::endl;
     }
     //if (totalSolutions >= minSlns)
+    std::cout << (char)033 << "[1;34m";
     results->writeOut(solver->getProblem(), std::cout);
+    std::cout << (char)033 << "[0m" << std::endl;
 
     if (!useBlindSolver) {
       GASatSolver *gaSolver= dynamic_cast<GASatSolver *>(solver);

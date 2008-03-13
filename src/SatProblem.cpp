@@ -54,21 +54,6 @@ namespace FastSatSolver {
         FILE* fd_;
     } openedFile(fileName);
     d->parseFile(openedFile.getFd());
-#ifndef NDEBUG
-    if (!this->hasError()) {
-      const int varsCount = this->getVarsCount();
-      std::cout << "<<< Formulas count: " << this->getFormulasCount() << std::endl;
-      std::cout << "<<< Variables count: " << varsCount << std::endl;
-      std::cout << "<<< Variables: ";
-      for(int i=0; i< varsCount; i++) {
-        std::cout << this->getVarName(i);
-        if (i==varsCount-1)
-          std::cout << std::endl;
-        else
-          std::cout << ", ";
-      }
-    }
-#endif // NDEBUG
   }
 
 
@@ -77,21 +62,6 @@ namespace FastSatSolver {
   void SatProblem::loadFromInput ( ) {
     d->fileName = "-";
     d->parseFile(stdin);
-#ifndef NDEBUG
-    if (!this->hasError()) {
-      const int varsCount = this->getVarsCount();
-      std::cout << "<<< Formulas count: " << this->getFormulasCount() << std::endl;
-      std::cout << "<<< Variables count: " << varsCount << std::endl;
-      std::cout << "<<< Variables: ";
-      for(int i=0; i< varsCount; i++) {
-        std::cout << this->getVarName(i);
-        if (i==varsCount-1)
-          std::cout << std::endl;
-        else
-          std::cout << ", ";
-      }
-    }
-#endif // NDEBUG
   }
 
 
