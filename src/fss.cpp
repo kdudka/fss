@@ -190,7 +190,7 @@ int main(int argc, char *argv[]) {
     }
 
     SatItemVector *results= 0;
-    int nSolutions = 0;
+    int totalSolutions = 0;
     float timeTotal = 0.0;
     for(int i=0; i<maxRuns; i++) {
       if (1<maxRuns)
@@ -201,20 +201,22 @@ int main(int argc, char *argv[]) {
       solver->start();
       delete results;
       results= solver->getSolutionVector();
-      nSolutions= results->getLength();
+      const int runSolutions= results->getLength() - totalSolutions;
+      totalSolutions+= runSolutions;
       const float timeElapsed= solver->getTimeElapsed()/1000.0;
       timeTotal+= timeElapsed;
       std::cout
-        << "<<< Found " << nSolutions << " solutions"
+        << "<<< Found " << runSolutions << " solutions"
         << " in " << std::fixed << std::setw(5) << std::setprecision(2) << timeElapsed << " s";
-      if (1<maxRuns && i)
-        std::cout << " (" << std::fixed << std::setw(5) << std::setprecision(2) << timeTotal << " s total)";
-      std::cout << std::endl;
-      if (nSolutions >= minSlns)
+      if (1<maxRuns) std::cout
+        << " (total " << totalSolutions << " solutions"
+        << " in " << std::fixed << std::setw(5) << std::setprecision(2) << timeTotal << " s)";
+    std::cout << std::endl;
+      if (totalSolutions >= minSlns)
         break;
       std::cout << std::endl;
     }
-    if (nSolutions >= minSlns)
+    if (totalSolutions >= minSlns)
       results->writeOut(solver->getProblem(), std::cout);
 
     if (!useBlindSolver) {
