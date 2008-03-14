@@ -4,7 +4,7 @@
 #include <ga/GAParameter.h>
 #include <ga/GAStatistics.h>
 #include <ga/GASimpleGA.h>
-#include "fss.h"
+#include "fssIO.h"
 #include "SatProblem.h"
 #include "SatSolver.h"
 
