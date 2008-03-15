@@ -29,7 +29,8 @@ int main(int argc, char *argv[]) {
     GASatSolver::registerDefaultParameters(params);
 
     // Default values of parameters
-    const bool FALSE = false;
+    const GABoolean DEF_COLOR_OUTPUT = gaFalse;
+    const GABoolean DEF_BLIND_SOLVER = gaFalse;
     const int DEF_MIN_COUNT_OF_SOLUTIONS =  1;
     const int DEF_MAX_COUNT_OF_SOLUTIONS =  8;
     const int DEF_MAX_COUNT_OF_RUNS =       8;
@@ -37,8 +38,8 @@ int main(int argc, char *argv[]) {
     const int DEF_STEP_WIDTH =              16;
 
     // Register extra parameters
-    params.add("color_output",            "color",    GAParameter::BOOLEAN,     &FALSE);
-    params.add("blind_solver",            "blind",    GAParameter::BOOLEAN,     &FALSE);
+    params.add("color_output",            "color",    GAParameter::BOOLEAN,     &DEF_COLOR_OUTPUT);
+    params.add("blind_solver",            "blind",    GAParameter::BOOLEAN,     &DEF_BLIND_SOLVER);
     params.add("min_count_of_solutions",  "minslns",  GAParameter::INT,         &DEF_MIN_COUNT_OF_SOLUTIONS);
     params.add("max_count_of_solutions",  "maxslns",  GAParameter::INT,         &DEF_MAX_COUNT_OF_SOLUTIONS);
     params.add("max_count_of_runs",       "maxruns",  GAParameter::INT,         &DEF_MAX_COUNT_OF_RUNS);
@@ -49,10 +50,10 @@ int main(int argc, char *argv[]) {
     params.parse(argc, argv, gaTrue);
 
     // true for blind solver, false for GA solver
-    bool useBlindSolver= false;
+    GABoolean useBlindSolver= DEF_BLIND_SOLVER;
     params.get("blind_solver", &useBlindSolver);
 
-    bool useColorOutput= false;
+    GABoolean useColorOutput= DEF_COLOR_OUTPUT;
     params.get("color_output", &useColorOutput);
     Color::enable(useColorOutput);
 

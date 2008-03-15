@@ -1,9 +1,7 @@
 #ifndef SCANNER_H
 #define SCANNER_H
 
-#ifndef NDEBUG
 # include <iostream>
-#endif // NDEBUG
 
 namespace FastSatSolver {
 
@@ -47,7 +45,6 @@ namespace FastSatSolver {
   };
 
 
-#ifndef NDEBUG
   inline std::ostream& operator<< (std::ostream &stream, EToken e) {
     switch (e) {
       case T_EOF:         stream << "T_EOF";          break;
@@ -86,7 +83,6 @@ namespace FastSatSolver {
     }
     return stream;
   }
-#endif // NDEBUG
 
 
   class IScanner
