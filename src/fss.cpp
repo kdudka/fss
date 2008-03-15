@@ -9,93 +9,20 @@
 #include "SatSolver.h"
 
 using std::string;
-using FastSatSolver::GenericException;
-using FastSatSolver::SatProblem;
-using FastSatSolver::AbstractSatSolver;
-using FastSatSolver::BlindSatSolver;
-using FastSatSolver::GASatSolver;
-using FastSatSolver::SolutionsCountStop;
-using FastSatSolver::TimedStop;
-using FastSatSolver::FitnessWatch;
-using FastSatSolver::SatItemVector;
-
-namespace {
-
-  inline void error(string szMsg) {
-    std::cerr << "fss: " << szMsg << std::endl;
-  }
-
-  // RAII object
-  class SatProblemWrapper {
-    public:
-      SatProblemWrapper() {
-        this->ptr = new (SatProblem);
-      }
-      ~SatProblemWrapper() {
-        delete this->ptr;
-      }
-      SatProblem* instance() {
-        return ptr;
-      }
-    private:
-      SatProblem *ptr;
-  };
-
-  // RAII object
-  class GASatSolverWrapper {
-    public:
-      GASatSolverWrapper(SatProblem *problem, const GAParameterList &params) {
-        this->ptr = GASatSolver::create(problem, params);
-      }
-      ~GASatSolverWrapper() {
-        delete this->ptr;
-      }
-      GASatSolver* instance() {
-        return ptr;
-      }
-    private:
-      GASatSolver *ptr;
-  };
-
-  class SatSolverDestructor {
-    public:
-      SatSolverDestructor(AbstractSatSolver *solver):
-        solver_(solver)
-    {
-    }
-      ~SatSolverDestructor() {
-        delete solver_;
-      }
-    private:
-      AbstractSatSolver *solver_;
-  };
-
-}
+using namespace FastSatSolver;
+using namespace FastSatSolver::StreamDecorator;
 
 int main(int argc, char *argv[]) {
+  int exitCode = 0;
+
+  // Used for final clean-up on exit
+  SatProblem *satProblem = 0;
+  AbstractSatSolver *satSolver = 0;
+  SolutionsCountStop *slnsCountStop = 0;
+  TimedStop *timedStop = 0;
+  FitnessWatch *fitnessWatch = 0;
+  SatItemVector *results = 0;
   try {
-    SatProblemWrapper spWrapper;
-    SatProblem *problem= spWrapper.instance();
-
-    std::cerr << "Loading SAT problem...\n";
-    problem->loadFromInput();
-    //problem->loadFromFile("input.txt");
-    if (problem->hasError())
-      throw GenericException("SatProblem::hasError() returned true)");
-#ifndef NDEBUG
-    const int varsCount = problem->getVarsCount();
-    std::cout << (char)033 << "[1;33m--- Formulas count: " << (char)033 << "[1;32m" << problem->getFormulasCount() << std::endl;
-    std::cout << (char)033 << "[1;33m--- Variables count: " << (char)033 << "[1;32m"  << varsCount << std::endl;
-    std::cout << (char)033 << "[1;33m--- Variables: " << (char)033 << "[0m";
-    for(int i=0; i< varsCount; i++) {
-      std::cout  << (char)033 << "[1;32m" << problem->getVarName(i) << (char)033 << "[0m";
-      if (i==varsCount-1)
-        std::cout << (char)033 << "[0m" << std::endl;
-      else
-        std::cout << ", ";
-    }
-#endif // NDEBUG
-
     // Parse cmd-line parameters
     GAParameterList params;
     // GASatSolver-specific parameters
@@ -110,6 +37,7 @@ int main(int argc, char *argv[]) {
     const int DEF_STEP_WIDTH =              16;
 
     // Register extra parameters
+    params.add("color_output",            "color",    GAParameter::BOOLEAN,     &FALSE);
     params.add("blind_solver",            "blind",    GAParameter::BOOLEAN,     &FALSE);
     params.add("min_count_of_solutions",  "minslns",  GAParameter::INT,         &DEF_MIN_COUNT_OF_SOLUTIONS);
     params.add("max_count_of_solutions",  "maxslns",  GAParameter::INT,         &DEF_MAX_COUNT_OF_SOLUTIONS);
@@ -119,19 +47,20 @@ int main(int argc, char *argv[]) {
 
     // parse using GAParameterList class
     params.parse(argc, argv, gaTrue);
-    // TODO: Remove next line?
-    std::cout << (char)033 << "[1;36m" << params;
-    std::cout << (char)033 << "[0m" << std::endl;
 
     // true for blind solver, false for GA solver
     bool useBlindSolver= false;
     params.get("blind_solver", &useBlindSolver);
 
+    bool useColorOutput= false;
+    params.get("color_output", &useColorOutput);
+    Color::enable(useColorOutput);
+
     // Minimum of solutions (to declare as solution)
     int minSlns= DEF_MIN_COUNT_OF_SOLUTIONS;
     params.get("min_count_of_solutions", &minSlns);
     if (minSlns <= 0) {
-      error("min_count_of_solutions out of range, using default");
+      printError("min_count_of_solutions out of range, using default");
       minSlns = DEF_MIN_COUNT_OF_SOLUTIONS;
     }
 
@@ -139,7 +68,7 @@ int main(int argc, char *argv[]) {
     int maxSlns= DEF_MAX_COUNT_OF_SOLUTIONS;
     params.get("max_count_of_solutions", &maxSlns);
     if (maxSlns <= 0) {
-      error("max_count_of_solutions out of range, using default");
+      printError("max_count_of_solutions out of range, using default");
       maxSlns = DEF_MAX_COUNT_OF_SOLUTIONS;
     }
 
@@ -147,7 +76,7 @@ int main(int argc, char *argv[]) {
     int maxRuns= DEF_MAX_COUNT_OF_RUNS;
     params.get("max_count_of_runs", &maxRuns);
     if (maxRuns <= 0) {
-      error("max_count_of_runs out of range, using default");
+      printError("max_count_of_runs out of range, using default");
       maxRuns = DEF_MAX_COUNT_OF_RUNS;
     }
 
@@ -155,7 +84,7 @@ int main(int argc, char *argv[]) {
     int maxTime= DEF_MAX_TIME_PER_RUN;
     params.get("max_time_per_run", &maxTime);
     if (maxTime < 0) {
-      error("max_time_per_run out of range, using default");
+      printError("max_time_per_run out of range, using default");
       maxTime = DEF_MAX_TIME_PER_RUN;
     }
 
@@ -163,93 +92,121 @@ int main(int argc, char *argv[]) {
     int stepWidth= DEF_STEP_WIDTH;
     params.get("step_width", &stepWidth);
     if (stepWidth <= 0) {
-      error("step_width out of range, using default");
+      printError("step_width out of range, using default");
       stepWidth = DEF_STEP_WIDTH;
     }
 
     if (useBlindSolver) {
       // exclude parameters for blind solver
       if (maxRuns != DEF_MAX_COUNT_OF_RUNS) {
-        error("Parameter 'max_count_of_runs' is irrelevant for blind solver");
+        printError("Parameter 'max_count_of_runs' is irrelevant for blind solver");
       }
       maxRuns = 1;
     } else {
       // exclude parameters for GA solver
       if (stepWidth != DEF_STEP_WIDTH) {
-        error("Parameter 'step_width' is irrelevant for GA solver");
+        printError("Parameter 'step_width' is irrelevant for GA solver");
         stepWidth = DEF_STEP_WIDTH;
       }
     }
 
-    std::cerr << "Creating solver...\n";
-    AbstractSatSolver *solver= 0;
-    FitnessWatch *fitnessWatch= 0;
+    // TODO: Load config file
+
+    std::cout << Color(C_CYAN) << params << Color() << std::endl;
+
+    satProblem = new SatProblem;
+
+    // TODO: load SAT file
+    std::cerr << "Loading SAT problem...\n";
+    satProblem->loadFromInput();
+    //problem->loadFromFile("input.txt");
+    if (satProblem->hasError())
+      throw GenericException("SatProblem::hasError() returned true");
+
+    const int varsCount = satProblem->getVarsCount();
+    std::cout << Color(C_YELLOW) << "--- Formulas count: " << Color(C_RED) << satProblem->getFormulasCount() << std::endl;
+    std::cout << Color(C_YELLOW) << "--- Variables count: " << Color(C_RED) << varsCount << std::endl;
+    std::cout << Color(C_YELLOW) << "--- Variables: " << Color();
+    for(int i=0; i< varsCount; i++) {
+      std::cout  << Color(C_RED) << satProblem->getVarName(i) << Color();
+      if (i==varsCount-1)
+        std::cout << Color() << std::endl;
+      else
+        std::cout << ", ";
+    }
+
     if (useBlindSolver) {
-      solver = new BlindSatSolver(problem, stepWidth);
-      }  else {
-      GASatSolver *gaSolver= GASatSolver::create(problem, params);
+      satSolver = new BlindSatSolver(satProblem, stepWidth);
+    }  else {
+      GASatSolver *gaSolver= GASatSolver::create(satProblem, params);
+      // TODO: Universal fitnessWatch?
       fitnessWatch = new FitnessWatch(gaSolver, std::cout);
       gaSolver->addObserver(fitnessWatch);
-      solver = gaSolver;
+      satSolver = gaSolver;
     }
-    SatSolverDestructor solverDestructor(solver);
 
-    SolutionsCountStop *maxSlnsStop= new SolutionsCountStop(solver, maxSlns);
-    solver->addObserver(maxSlnsStop);
+    slnsCountStop = new SolutionsCountStop(satSolver, maxSlns);
+    satSolver->addObserver(slnsCountStop);
 
-    TimedStop *timedStop = 0;
     if (maxTime) {
-      timedStop = new TimedStop(solver, maxTime);
-      solver->addObserver(timedStop);
+      timedStop = new TimedStop(satSolver, maxTime);
+      satSolver->addObserver(timedStop);
     }
 
-    SatItemVector *results= 0;
     int totalSolutions = 0;
     float timeTotal = 0.0;
     for(int i=0; i<maxRuns; i++) {
       if (1<maxRuns)
-        std::cout << (char)033 << "[1;32m>>> Run" << std::setw(4) << i+1 << " of" << std::setw(4) << maxRuns << (char)033 << "[0m" << std::endl;
-      solver->reset();
+        std::cout << Color(C_GREEN) << ">>> Run" << std::setw(4) << i+1 << " of" << std::setw(4) << maxRuns << Color() << std::endl;
+
+      // Initialization
+      satSolver->reset();
       if (fitnessWatch)
         fitnessWatch->reset();
-      solver->start();
+
+      // Start progress
+      satSolver->start();
+
+      // Fetch progresse's results
       delete results;
-      results= solver->getSolutionVector();
+      results= satSolver->getSolutionVector();
       const int runSolutions= results->getLength() - totalSolutions;
       totalSolutions+= runSolutions;
-      const float timeElapsed= solver->getTimeElapsed()/1000.0;
+      const float timeElapsed= satSolver->getTimeElapsed()/1000.0;
       timeTotal+= timeElapsed;
       std::cout
-        << (char)033 << "[1;32m<<< Found" << std::setw(5) << runSolutions << " solutions"
-        << " in " << std::fixed << std::setw(5) << std::setprecision(2) << timeElapsed << " s" << (char)033 << "[0m" << std::endl;
+        << Color(C_GREEN) << "<<< Found" << std::setw(5) << runSolutions << " solutions"
+        << " in " << FixedFloat(3,2) << timeElapsed << " s" << Color() << std::endl;
       if (1<maxRuns) std::cout
-        << (char)033 << "[1;31m<<< Total" << std::setw(5) << totalSolutions << " solutions"
-        << " in " << std::fixed << std::setw(5) << std::setprecision(2) << timeTotal << " s" << (char)033 << "[0m" << std::endl;
+        << Color(C_RED) << "<<< Total" << std::setw(5) << totalSolutions << " solutions"
+        << " in " << FixedFloat(3,2) << timeTotal << " s" << Color() << std::endl;
       if (totalSolutions >= minSlns)
         break;
       std::cout << std::endl;
     }
     //if (totalSolutions >= minSlns)
-    std::cout << (char)033 << "[1;34m";
-    results->writeOut(solver->getProblem(), std::cout);
-    std::cout << (char)033 << "[0m" << std::endl;
+    std::cout << Color(C_LIGHT_BLUE);
+    results->writeOut(satSolver->getProblem(), std::cout);
+    std::cout << Color() << std::endl;
 
     if (!useBlindSolver) {
-      GASatSolver *gaSolver= dynamic_cast<GASatSolver *>(solver);
+      GASatSolver *gaSolver= dynamic_cast<GASatSolver *>(satSolver);
       GAStatistics stats= gaSolver->getStatistics();
-      std::cout << "--- GA Statistics" << std::endl << stats << std::endl;
+      std::cout << std::endl << Color(C_CYAN) << stats << Color() << std::endl;
     }
-
-    delete results;
-    delete fitnessWatch;
-    delete timedStop;
-    delete maxSlnsStop;
-
-    return 0;
   }
   catch (GenericException e) {
-    error(e.getText());
-    return 1;
+    printError(e.getText());
+    exitCode = 1;
   }
+  // Final clean-up
+  delete results;
+  delete fitnessWatch;
+  delete timedStop;
+  delete slnsCountStop;
+  delete satSolver;
+  delete satProblem;
+
+  return exitCode;
 }
 

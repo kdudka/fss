@@ -109,8 +109,10 @@ namespace FastSatSolver {
     AbstractProcess::start();
   }
   void AbstractProcessWatched::stop() {
-    d->running = false;
-    d->total += d->currentElapsed();
+    if (d->running) {
+      d->running = false;
+      d->total += d->currentElapsed();
+    }
     // Delegate to base
     AbstractProcess::stop();
   }
@@ -121,6 +123,12 @@ namespace FastSatSolver {
     AbstractProcess::reset();
   }
   long AbstractProcessWatched::getTimeElapsed() {
+    /*if (!d->running) {
+      std::cerr << "AbstractProcessWatched::getTimeElapsed()" << std::endl;
+      std::cerr << "  running: false" << std::endl;
+      std::cerr << "    total: " << d->total << std::endl;
+      std::cerr << "  current: " << d->currentElapsed() << std::endl;
+    }*/
     long total = d->total;
     if (d->running)
       total+= d->currentElapsed();
@@ -581,7 +589,7 @@ namespace FastSatSolver {
   void FitnessWatch::notify() {
     GAStatistics stats = d->solver->getStatistics();
     float maxFitness = stats.maxEver();
-    if (maxFitness <= d->maxFitness)
+    if (0==stats.generation() || maxFitness <= d->maxFitness)
       // Fitness not changed
       return;
     d->maxFitness = maxFitness;
