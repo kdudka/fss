@@ -682,13 +682,6 @@ namespace FastSatSolver {
       << " found in " << FixFloatManip(5,2) << timeElapsed << " s"
       << Color() << std::endl;
   }
-  void ResultsWatch::reset() {
-    d->nResults = 0;
-  }
-
-
-
-
 
 } // namespace FastSatSolver
 

@@ -298,7 +298,6 @@ namespace FastSatSolver {
       ResultsWatch(AbstractSatSolver *solver, std::ostream &streamTo);
       virtual ~ResultsWatch();
       virtual void notify();
-      void reset();
     private:
       struct Private;
       Private *d;

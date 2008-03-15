@@ -170,7 +170,6 @@ int main(int argc, char *argv[]) {
       // Initialization
       satSolver->reset();
       fitnessWatch->reset();
-      resultsWatch->reset();
 
       // Start progress
       satSolver->start();
