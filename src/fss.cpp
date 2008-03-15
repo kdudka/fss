@@ -7,6 +7,9 @@
 #include "fssIO.h"
 #include "SatProblem.h"
 #include "SatSolver.h"
+#include "BlindSatSolver.h"
+#include "GaSatSolver.h"
+#include "SatSolverObserver.h"
 
 using std::string;
 using namespace FastSatSolver;

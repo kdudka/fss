@@ -25,7 +25,11 @@ CHECK_CXX_COMPILER_FLAG(-O3 HAVE_O3)
 SET(CMAKE_CXX_FLAGS "${STD_FLAG} ${PEDANTIC_FLAG} ${DEBUG_FLAG}" CACHE STRING "C++ compiler flags" FORCE)
 
 # Executable binary rrv-visualize
-ADD_EXECUTABLE(fss SatSolver.cpp SatProblem.cpp Scanner.cpp Formula.cpp fssIO.cpp fss.cpp)
+ADD_EXECUTABLE(fss
+  fss.cpp fssIO.cpp
+  SatProblem.cpp Scanner.cpp Formula.cpp
+  SatSolver.cpp SatSolverObserver.cpp
+  BlindSatSolver.cpp GaSatSolver.cpp)
 TARGET_LINK_LIBRARIES(fss ga)
 
 ADD_EXECUTABLE(randsat randsat.cpp)

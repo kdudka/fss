@@ -2,13 +2,6 @@
 #define SATSOLVER_H
 
 #include <iostream>
-#include <string>
-
-class GAGenome;
-class GABinaryString;
-class GAParameterList;
-class GAGeneticAlgorithm;
-class GAStatistics;
 
 namespace FastSatSolver {
 
@@ -129,53 +122,17 @@ namespace FastSatSolver {
       Private *d;
   };
 
-  class GASatItem: public ISatItem {
+  class SatItemSet {
     public:
-      GASatItem(const GABinaryString &);
-      virtual ~GASatItem();
-      virtual int getLength() const;
-      virtual bool getBit(int) const;
-      virtual GASatItem* clone() const;
-    private:
-      struct Private;
-      Private *d;
-  };
-
-  class GASatItemSet {
-    public:
-      GASatItemSet();
-      ~GASatItemSet();
+      SatItemSet();
+      ~SatItemSet();
       int getLength();
-      void addItem(const GABinaryString &);
+      void addItem(ISatItem *item);
       SatItemVector* createVector();
       void clear();
     private:
       struct Private;
       Private *d;
-  };
-
-  class SatItemGalibAdatper: public ISatItem {
-    public:
-      SatItemGalibAdatper(const GABinaryString &);
-      virtual ~SatItemGalibAdatper();
-      virtual int getLength() const;
-      virtual bool getBit(int) const;
-      virtual SatItemGalibAdatper* clone() const;
-    private:
-      const GABinaryString &bs_;
-  };
-
-
-  class LongSatItem: public ISatItem {
-    public:
-      LongSatItem(int length, long fromNumber);
-      virtual ~LongSatItem();
-      virtual int getLength() const;
-      virtual bool getBit(int index) const;
-      virtual LongSatItem* clone() const;
-    private:
-      int  length_;
-      long lNumber_;
   };
 
 
@@ -198,112 +155,6 @@ namespace FastSatSolver {
       Private *d;
   };
 
-
-  class GASatSolver: public AbstractSatSolver
-  {
-    public:
-      virtual ~GASatSolver();
-
-      /**
-       * @return SatProblemSolver*
-       * @param  problem
-       */
-      static GASatSolver* create (SatProblem *problem, const GAParameterList &params);
-      static void registerDefaultParameters(GAParameterList &);
-      const GAStatistics& getStatistics() const;
-      virtual SatProblem* getProblem();
-      virtual int getSolutionsCount();
-      virtual SatItemVector* getSolutionVector();
-      virtual float minFitness();
-      virtual float avgFitness();
-      virtual float maxFitness();
-
-    protected:
-      /**
-       * @param  problem
-       */
-      GASatSolver (SatProblem *problem, const GAParameterList &params);
-
-      virtual void initialize();
-      virtual void doStep();
-
-    private:
-      struct Private;
-      Private *d;
-  };
-
-
-  class BlindSatSolver: public AbstractSatSolver
-  {
-    public:
-      BlindSatSolver(SatProblem *problem, int stepWidth);
-      virtual ~BlindSatSolver();
-
-      /**
-       * @return SatProblemSolver*
-       * @param  problem
-       */
-      virtual SatProblem* getProblem();
-      virtual int getSolutionsCount();
-      virtual SatItemVector* getSolutionVector();
-      virtual float minFitness();
-      virtual float avgFitness();
-      virtual float maxFitness();
-
-    protected:
-      virtual void initialize();
-      virtual void doStep();
-
-    private:
-      struct Private;
-      Private *d;
-  };
-
-
-  class TimedStop: public IObserver {
-    public:
-      TimedStop(AbstractProcessWatched *process, long msec);
-      virtual ~TimedStop();
-      virtual void notify();
-    private:
-      struct Private;
-      Private *d;
-  };
-
-
-  class SolutionsCountStop: public IObserver {
-    public:
-      SolutionsCountStop(AbstractSatSolver *solver, int minCountOfSolutions);
-      virtual ~SolutionsCountStop();
-      virtual void notify();
-    private:
-      struct Private;
-      Private *d;
-  };
-
-
-  class FitnessWatch: public IObserver {
-    public:
-      FitnessWatch(AbstractSatSolver *solver, std::ostream &streamTo);
-      virtual ~FitnessWatch();
-      virtual void notify();
-      void reset();
-    private:
-      struct Private;
-      Private *d;
-  };
-
-  class ResultsWatch: public IObserver {
-    public:
-      ResultsWatch(AbstractSatSolver *solver, std::ostream &streamTo);
-      virtual ~ResultsWatch();
-      virtual void notify();
-    private:
-      struct Private;
-      Private *d;
-  };
-
 } // namespace FastSatSolver
-
 
 #endif // SATSOLVER_H
