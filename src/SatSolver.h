@@ -186,6 +186,9 @@ namespace FastSatSolver {
       virtual SatProblem* getProblem() = 0;
       virtual int getSolutionsCount() = 0;
       virtual SatItemVector* getSolutionVector() = 0;
+      virtual float minFitness() = 0;
+      virtual float avgFitness() = 0;
+      virtual float maxFitness() = 0;
 
     protected:
       AbstractSatSolver();
@@ -211,6 +214,9 @@ namespace FastSatSolver {
       virtual SatProblem* getProblem();
       virtual int getSolutionsCount();
       virtual SatItemVector* getSolutionVector();
+      virtual float minFitness();
+      virtual float avgFitness();
+      virtual float maxFitness();
 
     protected:
       /**
@@ -240,6 +246,9 @@ namespace FastSatSolver {
       virtual SatProblem* getProblem();
       virtual int getSolutionsCount();
       virtual SatItemVector* getSolutionVector();
+      virtual float minFitness();
+      virtual float avgFitness();
+      virtual float maxFitness();
 
     protected:
       virtual void initialize();
@@ -275,8 +284,19 @@ namespace FastSatSolver {
 
   class FitnessWatch: public IObserver {
     public:
-      FitnessWatch(GASatSolver *solver, std::ostream &streamTo);
+      FitnessWatch(AbstractSatSolver *solver, std::ostream &streamTo);
       virtual ~FitnessWatch();
+      virtual void notify();
+      void reset();
+    private:
+      struct Private;
+      Private *d;
+  };
+
+  class ResultsWatch: public IObserver {
+    public:
+      ResultsWatch(AbstractSatSolver *solver, std::ostream &streamTo);
+      virtual ~ResultsWatch();
       virtual void notify();
       void reset();
     private:

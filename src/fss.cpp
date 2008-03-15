@@ -21,6 +21,7 @@ int main(int argc, char *argv[]) {
   SolutionsCountStop *slnsCountStop = 0;
   TimedStop *timedStop = 0;
   FitnessWatch *fitnessWatch = 0;
+  ResultsWatch *resultsWatch = 0;
   SatItemVector *results = 0;
   try {
     // Parse cmd-line parameters
@@ -136,15 +137,21 @@ int main(int argc, char *argv[]) {
         std::cout << ", ";
     }
 
-    if (useBlindSolver) {
+    if (useBlindSolver)
       satSolver = new BlindSatSolver(satProblem, stepWidth);
-    }  else {
-      GASatSolver *gaSolver= GASatSolver::create(satProblem, params);
-      // TODO: Universal fitnessWatch?
-      fitnessWatch = new FitnessWatch(gaSolver, std::cout);
-      gaSolver->addObserver(fitnessWatch);
-      satSolver = gaSolver;
-    }
+    else
+      satSolver = GASatSolver::create(satProblem, params);
+
+    if (useBlindSolver)
+      std::cout << Color(C_LIGHT_BLUE) << ">>> Using blind solver" << Color() << std::endl;
+    else
+      std::cout << Color(C_LIGHT_BLUE) << ">>> Using GAlib solver" << Color() << std::endl;
+
+    fitnessWatch = new FitnessWatch(satSolver, std::cout);
+    satSolver->addObserver(fitnessWatch);
+
+    resultsWatch = new ResultsWatch(satSolver, std::cout);
+    satSolver->addObserver(resultsWatch);
 
     slnsCountStop = new SolutionsCountStop(satSolver, maxSlns);
     satSolver->addObserver(slnsCountStop);
@@ -162,8 +169,8 @@ int main(int argc, char *argv[]) {
 
       // Initialization
       satSolver->reset();
-      if (fitnessWatch)
-        fitnessWatch->reset();
+      fitnessWatch->reset();
+      resultsWatch->reset();
 
       // Start progress
       satSolver->start();
@@ -202,6 +209,7 @@ int main(int argc, char *argv[]) {
   }
   // Final clean-up
   delete results;
+  delete resultsWatch;
   delete fitnessWatch;
   delete timedStop;
   delete slnsCountStop;

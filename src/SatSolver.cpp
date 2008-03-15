@@ -1,5 +1,7 @@
 #include <assert.h>
 #include <time.h>
+#include <math.h>
+#include <limits.h>
 #include <iostream>
 #include <iomanip>
 #include <list>
@@ -10,6 +12,7 @@
 #include <ga/GAStatistics.h>
 #include "SatProblem.h"
 #include "SatSolver.h"
+#include "fssIO.h"
 
 namespace {
   struct FixFloatManip {
@@ -148,19 +151,30 @@ namespace FastSatSolver {
     int               stepWidth;
     long              end;
     long              current;
+    float             minFitness;
     float             maxFitness;
+    double            sumFitness;
     SatItemVector     resultSet;
+
+    void init() {
+      current = 0L;
+      minFitness = INFINITY;
+      maxFitness = 0.0;
+      sumFitness = 0.0;
+    }
   };
   BlindSatSolver::BlindSatSolver(SatProblem *problem, int stepWidth):
     d(new Private)
   {
-    // TODO: Check long type usability for desired count of variables!!
-    const int varsCount= problem->getVarsCount();
+    const unsigned varsCount= problem->getVarsCount();
+    if (varsCount+2 >= LONG_BIT) {
+      delete d;
+      throw GenericException("Too much variables - can't use blind solver on this machine!");
+    }
     d->problem = problem;
     d->stepWidth = stepWidth;
-    d->end = 1<<varsCount;
-    d->current = 0;
-    d->maxFitness = 0.0;
+    d->end = 1L<<varsCount;
+    d->init();
   }
   BlindSatSolver::~BlindSatSolver() {
     delete d;
@@ -174,11 +188,19 @@ namespace FastSatSolver {
   SatItemVector* BlindSatSolver::getSolutionVector() {
     return new SatItemVector(d->resultSet);
   }
+  float BlindSatSolver::minFitness() {
+    return d->minFitness;
+  }
+  float BlindSatSolver::avgFitness() {
+    return d->sumFitness / d->current;
+  }
+  float BlindSatSolver::maxFitness() {
+    return d->maxFitness;
+  }
   // protected
   void BlindSatSolver::initialize() {
+    d->init();
     d->resultSet.clear();
-    d->current = 0;
-    d->maxFitness = 0.0;
   }
   // protected
   void BlindSatSolver::doStep() {
@@ -188,35 +210,32 @@ namespace FastSatSolver {
     for(int i=0; i< countPerStep; i++) {
       if (d->current >= d->end) {
         // all space explored
-#ifndef NDEBUG
-        std::cerr << std::endl << "BlindSatSolver::doStep(): done!" << std::endl << std::endl;
-#endif // NDEBUG
         this->stop();
         break;
       }
+
+      // Evalueate fitness
       LongSatItem data(nVars, d->current++);
       const int nSats= d->problem->getSatsCount(&data);
       const float fitness= static_cast<float>(nSats)/nForms;
+
+      // Update statistics
+      d->sumFitness += fitness;
+      if (fitness < d->minFitness)
+        d->minFitness = fitness;
+
+      if (fitness > d->maxFitness) {
+        // maxFitness increased
+        d->maxFitness = fitness;
+        this->notify();
+      }
+
       if (nSats == nForms) {
         // Solution found
         d->resultSet.addItem(data.clone());
-#ifndef NDEBUG
-        std::cout << std::endl << "--- solution found" << std::flush;
-#endif // NDEBUG
-        this->notify();
-      } else if (fitness > d->maxFitness) {
-        // maxFitness increased
-        d->maxFitness = fitness;
-#ifndef NDEBUG
-        std::cout << ">" << std::flush;
-#endif // NDEBUG
         this->notify();
       }
     }
-#ifndef NDEBUG
-    if (d->current < d->end)
-      std::cout << "." << std::flush;
-#endif // NDEBUG
   }
 
 
@@ -277,6 +296,15 @@ namespace FastSatSolver {
   SatItemVector* GASatSolver::getSolutionVector() {
     return d->resultSet->createVector();
   }
+  float GASatSolver::minFitness() {
+    return d->ga->statistics().offlineMin();
+  }
+  float GASatSolver::avgFitness() {
+    return d->ga->statistics().offlineMax();
+  }
+  float GASatSolver::maxFitness() {
+    return d->maxFitness;
+  }
   // protected
   void GASatSolver::initialize() {
     GARandomSeed();
@@ -308,16 +336,16 @@ namespace FastSatSolver {
     SatItemGalibAdatper data(bs);
     const int formulasCount = problem->getFormulasCount();
     const int satsCount = problem->getSatsCount(&data);
-    if (formulasCount==satsCount) {
-      resultSet->addItem(bs);
-      solver->notify();
-    };
-
     float fitness = static_cast<float>(satsCount)/formulasCount;
     if (fitness > d->maxFitness) {
       d->maxFitness = fitness;
       solver->notify();
     }
+
+    if (formulasCount==satsCount) {
+      resultSet->addItem(bs);
+      solver->notify();
+    };
 
     // TODO: scale fitness?
     return fitness;
@@ -363,7 +391,7 @@ namespace FastSatSolver {
   }
   bool LongSatItem::getBit(int index) const {
     assert(index < length_);
-    return (1<<index) & lNumber_;
+    return (1L<<index) & lNumber_;
   }
   LongSatItem* LongSatItem::clone() const {
     return new LongSatItem(length_, lNumber_);
@@ -571,13 +599,13 @@ namespace FastSatSolver {
   // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // FitnessWatch implementation
   struct FitnessWatch::Private {
-    GASatSolver     *solver;
-    std::ostream    &stream;
-    float           maxFitness;
+    AbstractSatSolver   *solver;
+    std::ostream        &stream;
+    float               maxFitness;
 
     Private(std::ostream &streamTo): stream(streamTo) { }
   };
-  FitnessWatch::FitnessWatch(GASatSolver *solver, std::ostream &streamTo):
+  FitnessWatch::FitnessWatch(AbstractSatSolver *solver, std::ostream &streamTo):
     d(new Private(streamTo))
   {
     d->solver = solver;
@@ -587,16 +615,27 @@ namespace FastSatSolver {
     delete d;
   }
   void FitnessWatch::notify() {
-    GAStatistics stats = d->solver->getStatistics();
-    float maxFitness = stats.maxEver();
-    if (0==stats.generation() || maxFitness <= d->maxFitness)
+    AbstractSatSolver *solver= d->solver;
+    float maxFitness = solver->maxFitness();
+    if (maxFitness <= d->maxFitness)
       // Fitness not changed
       return;
+
+    int generation = 0;
+    GASatSolver *gaSolver= dynamic_cast<GASatSolver *>(solver);
+    if (gaSolver) {
+      GAStatistics stats= gaSolver->getStatistics();
+      generation = stats.generation();
+      if (0 == generation)
+        return;
+    }
+
+    // Save maxFitness for next call
     d->maxFitness = maxFitness;
 
-    const float avgFitness= stats.offlineMax();
-    const float minFitness= stats.offlineMin();
-    const int generation= stats.generation();
+    // Read other statistics
+    const float minFitness= solver->minFitness();
+    const float avgFitness= solver->avgFitness();
     const float timeElapsed= d->solver->getTimeElapsed()/1000.0;
 
     d->stream
@@ -610,6 +649,46 @@ namespace FastSatSolver {
   void FitnessWatch::reset() {
     d->maxFitness = 0.0;
   }
+
+  // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // ResultsWatch implementation
+  struct ResultsWatch::Private {
+    AbstractSatSolver   *solver;
+    std::ostream        &stream;
+    int                 nResults;
+
+    Private(std::ostream &streamTo): stream(streamTo) { }
+  };
+  ResultsWatch::ResultsWatch(AbstractSatSolver *solver, std::ostream &streamTo):
+    d(new Private(streamTo))
+  {
+    d->solver = solver;
+    d->nResults = 0;
+  }
+  ResultsWatch::~ResultsWatch() {
+    delete d;
+  }
+  void ResultsWatch::notify() {
+    using namespace StreamDecorator;
+    AbstractSatSolver *solver= d->solver;
+    const int nResults= solver->getSolutionsCount();
+    if (nResults <= d->nResults)
+      return;
+    d->nResults = nResults;
+
+    const float timeElapsed= solver->getTimeElapsed()/1000.0;
+    d->stream
+      << Color(C_LIGHT_BLUE) << "--- solution #" << nResults
+      << " found in " << FixFloatManip(5,2) << timeElapsed << " s"
+      << Color() << std::endl;
+  }
+  void ResultsWatch::reset() {
+    d->nResults = 0;
+  }
+
+
+
+
 
 } // namespace FastSatSolver
 
