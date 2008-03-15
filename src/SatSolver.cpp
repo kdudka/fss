@@ -1,16 +1,12 @@
-#include <assert.h>
 #include <time.h>
-#include <math.h>
-#include <limits.h>
 #include <iostream>
 #include <iomanip>
 #include <list>
 #include <vector>
 #include <set>
+#include "fssIO.h"
 #include "SatProblem.h"
 #include "SatSolver.h"
-#include "GaSatSolver.h"
-#include "fssIO.h"
 
 namespace FastSatSolver {
 

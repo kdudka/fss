@@ -11,13 +11,13 @@ class GAStatistics;
 
 namespace FastSatSolver {
 
-  class GASatItem: public ISatItem {
+  class GaSatItem: public ISatItem {
     public:
-      GASatItem(const GABinaryString &);
-      virtual ~GASatItem();
+      GaSatItem(const GABinaryString &);
+      virtual ~GaSatItem();
       virtual int getLength() const;
       virtual bool getBit(int) const;
-      virtual GASatItem* clone() const;
+      virtual GaSatItem* clone() const;
     private:
       struct Private;
       Private *d;
@@ -35,16 +35,16 @@ namespace FastSatSolver {
   };
 
 
-  class GASatSolver: public AbstractSatSolver
+  class GaSatSolver: public AbstractSatSolver
   {
     public:
-      virtual ~GASatSolver();
+      virtual ~GaSatSolver();
 
       /**
        * @return SatProblemSolver*
        * @param  problem
        */
-      static GASatSolver* create (SatProblem *problem, const GAParameterList &params);
+      static GaSatSolver* create (SatProblem *problem, const GAParameterList &params);
       static void registerDefaultParameters(GAParameterList &);
       const GAStatistics& getStatistics() const;
       virtual SatProblem* getProblem();
@@ -58,7 +58,7 @@ namespace FastSatSolver {
       /**
        * @param  problem
        */
-      GASatSolver (SatProblem *problem, const GAParameterList &params);
+      GaSatSolver (SatProblem *problem, const GAParameterList &params);
 
       virtual void initialize();
       virtual void doStep();

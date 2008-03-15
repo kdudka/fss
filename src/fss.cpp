@@ -29,8 +29,8 @@ int main(int argc, char *argv[]) {
   try {
     // Parse cmd-line parameters
     GAParameterList params;
-    // GASatSolver-specific parameters
-    GASatSolver::registerDefaultParameters(params);
+    // GaSatSolver-specific parameters
+    GaSatSolver::registerDefaultParameters(params);
 
     // Default values of parameters
     const GABoolean DEF_COLOR_OUTPUT = gaFalse;
@@ -143,7 +143,7 @@ int main(int argc, char *argv[]) {
     if (useBlindSolver)
       satSolver = new BlindSatSolver(satProblem, stepWidth);
     else
-      satSolver = GASatSolver::create(satProblem, params);
+      satSolver = GaSatSolver::create(satProblem, params);
 
     if (useBlindSolver)
       std::cout << Color(C_LIGHT_BLUE) << ">>> Using blind solver" << Color() << std::endl;
@@ -200,7 +200,7 @@ int main(int argc, char *argv[]) {
     std::cout << Color() << std::endl;
 
     if (!useBlindSolver) {
-      GASatSolver *gaSolver= dynamic_cast<GASatSolver *>(satSolver);
+      GaSatSolver *gaSolver= dynamic_cast<GaSatSolver *>(satSolver);
       GAStatistics stats= gaSolver->getStatistics();
       std::cout << std::endl << Color(C_CYAN) << stats << Color() << std::endl;
     }

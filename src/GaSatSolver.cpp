@@ -9,28 +9,28 @@
 namespace FastSatSolver {
 
   // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // GASatItem implementation
-  struct GASatItem::Private {
+  // GaSatItem implementation
+  struct GaSatItem::Private {
     GABinaryString bs;
 
     Private(unsigned size): bs(size) { }
   };
-  GASatItem::GASatItem(const GABinaryString &bs):
+  GaSatItem::GaSatItem(const GABinaryString &bs):
     d(new Private(bs.size()))
   {
     d->bs.copy(bs);
   }
-  GASatItem::~GASatItem() {
+  GaSatItem::~GaSatItem() {
     delete d;
   }
-  int GASatItem::getLength() const {
+  int GaSatItem::getLength() const {
     return d->bs.size();
   }
-  bool GASatItem::getBit(int index) const {
+  bool GaSatItem::getBit(int index) const {
     return d->bs.bit(index);
   }
-  GASatItem* GASatItem::clone() const {
-    return new GASatItem(d->bs);
+  GaSatItem* GaSatItem::clone() const {
+    return new GaSatItem(d->bs);
   }
 
   // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -52,10 +52,10 @@ namespace FastSatSolver {
   }
 
   // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // GASatSolver implementation
-  struct GASatSolver::Private {
+  // GaSatSolver implementation
+  struct GaSatSolver::Private {
     SatProblem                *problem;
-    GASatSolver               *solver;
+    GaSatSolver               *solver;
     float                     maxFitness;
     GA1DBinaryStringGenome    *genome;
     GASimpleGA                *ga;
@@ -64,7 +64,7 @@ namespace FastSatSolver {
     static float fitness(GAGenome &);
   };
   // protected
-  GASatSolver::GASatSolver (SatProblem *problem, const GAParameterList &params):
+  GaSatSolver::GaSatSolver (SatProblem *problem, const GAParameterList &params):
     d(new Private)
   {
     d->problem = problem;
@@ -80,45 +80,45 @@ namespace FastSatSolver {
       d->ga->terminator(GAGeneticAlgorithm::TerminateUponPopConvergence);
     d->resultSet = new SatItemSet;
   }
-  GASatSolver::~GASatSolver() {
+  GaSatSolver::~GaSatSolver() {
     delete d->resultSet;
     delete d->ga;
     delete d->genome;
     delete d;
   }
-  GASatSolver* GASatSolver::create (SatProblem *problem, const GAParameterList &params) {
-    GASatSolver *obj = new GASatSolver(problem, params);
+  GaSatSolver* GaSatSolver::create (SatProblem *problem, const GAParameterList &params) {
+    GaSatSolver *obj = new GaSatSolver(problem, params);
     obj->initialize();
     return obj;
   }
-  void GASatSolver::registerDefaultParameters(GAParameterList &params) {
+  void GaSatSolver::registerDefaultParameters(GAParameterList &params) {
     GASimpleGA::registerDefaultParameters(params);
     const bool FALSE = false;
     params.add("term_upon_convergence", "convterm", GAParameter::BOOLEAN, &FALSE);
   }
-  SatProblem* GASatSolver::getProblem() {
+  SatProblem* GaSatSolver::getProblem() {
     return d->problem;
   }
-  const GAStatistics& GASatSolver::getStatistics() const {
+  const GAStatistics& GaSatSolver::getStatistics() const {
     return d->ga->statistics();
   }
-  int GASatSolver::getSolutionsCount() {
+  int GaSatSolver::getSolutionsCount() {
     return d->resultSet->getLength();
   }
-  SatItemVector* GASatSolver::getSolutionVector() {
+  SatItemVector* GaSatSolver::getSolutionVector() {
     return d->resultSet->createVector();
   }
-  float GASatSolver::minFitness() {
+  float GaSatSolver::minFitness() {
     return d->ga->statistics().offlineMin();
   }
-  float GASatSolver::avgFitness() {
+  float GaSatSolver::avgFitness() {
     return d->ga->statistics().offlineMax();
   }
-  float GASatSolver::maxFitness() {
+  float GaSatSolver::maxFitness() {
     return d->maxFitness;
   }
   // protected
-  void GASatSolver::initialize() {
+  void GaSatSolver::initialize() {
     GARandomSeed();
     d->maxFitness = 0.0;
     d->ga->initialize();
@@ -126,7 +126,7 @@ namespace FastSatSolver {
     // d->resultSet->clear();
   }
   // protected
-  void GASatSolver::doStep() {
+  void GaSatSolver::doStep() {
     GAGeneticAlgorithm &ga= *(d->ga);
     ga.step();
     if (ga.done()) {
@@ -136,11 +136,11 @@ namespace FastSatSolver {
 #endif // NDEBUG
     }
   }
-  float GASatSolver::Private::fitness(GAGenome &genome) {
+  float GaSatSolver::Private::fitness(GAGenome &genome) {
     // Static to non-static binding
     Private *d = reinterpret_cast<Private *>(genome.userData());
     SatProblem *problem = dynamic_cast<SatProblem *>(d->problem);
-    GASatSolver *solver = dynamic_cast<GASatSolver *>(d->solver);
+    GaSatSolver *solver = dynamic_cast<GaSatSolver *>(d->solver);
     const GABinaryString &bs= dynamic_cast<GABinaryString &>(genome);
     SatItemSet *resultSet= dynamic_cast<SatItemSet *>(d->resultSet);
 
@@ -155,7 +155,7 @@ namespace FastSatSolver {
     }
 
     if (formulasCount==satsCount) {
-      resultSet->addItem(new GASatItem(bs));
+      resultSet->addItem(new GaSatItem(bs));
       solver->notify();
     };
 

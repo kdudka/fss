@@ -78,7 +78,7 @@ namespace FastSatSolver {
       return;
 
     int generation = 0;
-    GASatSolver *gaSolver= dynamic_cast<GASatSolver *>(solver);
+    GaSatSolver *gaSolver= dynamic_cast<GaSatSolver *>(solver);
     if (gaSolver) {
       GAStatistics stats= gaSolver->getStatistics();
       generation = stats.generation();
