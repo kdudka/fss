@@ -35,7 +35,7 @@ namespace FastSatSolver {
   SatProblem::~SatProblem() {
     delete d;
   }
-  void SatProblem::loadFromFile (string fileName ) {
+  void SatProblem::loadFromFile (std::string fileName ) {
     d->fileName = fileName;
 
     // OpenedFile RAII
@@ -206,7 +206,7 @@ namespace FastSatSolver {
     assert(index < d->currentIndex);
     return d->indexToName[index];
   }
-  int VariableContainer::addVariable (string name ) {
+  int VariableContainer::addVariable (std::string name ) {
     if (d->nameToIndex.end() != d->nameToIndex.find(name))
       // Variable already exists
       return d->nameToIndex[name];

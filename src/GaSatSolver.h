@@ -98,7 +98,11 @@ namespace FastSatSolver {
 
     protected:
       /**
-       * @param  problem
+       * @brief Non-public constructor. Use static method create() instead.
+       * @param problem SatProblem instance containing SAT problem to solve.
+       * @param params GAParameterList containing GA-specific parameters.
+       * @return Returns initialized object of GaSatSolver.
+       * @note Design pattern @b Simple @b factory
        */
       GaSatSolver (SatProblem *problem, const GAParameterList &params);
 

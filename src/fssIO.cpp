@@ -8,7 +8,7 @@ namespace FastSatSolver {
 
   // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // GenericException implementation
-  GenericException::GenericException(string text):
+  GenericException::GenericException(std::string text):
     text_(text)
   {
   }

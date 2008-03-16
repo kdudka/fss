@@ -20,7 +20,7 @@ namespace FastSatSolver {
   class LongSatItem: public ISatItem {
     public:
       /**
-       * @param lenth Item length responds the count of variables.
+       * @param length Item length responds the count of variables.
        * @param fromNumber Long number representing item's data (bit by bit).
        */
       LongSatItem(int length, long fromNumber);
