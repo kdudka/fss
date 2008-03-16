@@ -13,6 +13,7 @@ using std::string;
 using namespace FastSatSolver;
 using namespace FastSatSolver::StreamDecorator;
 
+// Create observer OBSERVER and attach it to subject
 template <
 class OBSERVER,
       class SUBJECT,

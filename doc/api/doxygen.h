@@ -28,13 +28,24 @@ namespace FastSatSolver {
   
  /**
   * @defgroup SatSolver SAT Solver
-  * @brief Class AbstractSatSolver with its derived classes BlindSatSolver and
-  * GaSatSolver and their observers.
-  * @remarks
+  * @b SAT @b solvers:
   * - Class GaSatSolver - solver using GAlib library to solve SAT problem
   * - Class BlindSatSolver - solver using brute force method to solve SAT
   * problem
   * - Class AbstractSatSolver - common interface of both solvers
+  * 
+  * @b Observers:
+  * - Class TimedStop - observer which stops process after specified time
+  * - Class SolutionsCountStop - Observer which stop solver after specified
+  * count of solutions is found.
+  * - Class ProgressWatch - Observer which write out progress percentage when
+  * it is changed.
+  * - Class FitnessWatch - Observer which write out message when maxFitness
+  * value is increased.
+  * - Class ResultsWatch - Observer which write out message when solution is
+  * found.
+   * @brief Class AbstractSatSolver with its derived classes BlindSatSolver and
+   * GaSatSolver and their observers.
   */
  
  /**
