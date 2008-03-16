@@ -135,8 +135,8 @@ namespace FastSatSolver {
 
     const float timeElapsed= solver->getTimeElapsed()/1000.0;
     d->stream
-      << Color(C_LIGHT_BLUE) << "--- solution #" << nResults
-      << " found in " << FixedFloat(5,2) << timeElapsed << " s"
+      << Color(C_LIGHT_BLUE) << "--- " << nResults
+      << ". solution found in " << FixedFloat(5,2) << timeElapsed << " s"
       << Color() << std::endl;
   }
 

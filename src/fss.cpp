@@ -33,6 +33,8 @@ int main(int argc, char *argv[]) {
     GaSatSolver::registerDefaultParameters(params);
 
     // Default values of parameters
+    const char INPUT_STDIN[] = "-";
+    const GABoolean DEF_VERBOSE_MODE = gaFalse;
     const GABoolean DEF_COLOR_OUTPUT = gaFalse;
     const GABoolean DEF_BLIND_SOLVER = gaFalse;
     const int DEF_MIN_COUNT_OF_SOLUTIONS =  1;
@@ -42,8 +44,10 @@ int main(int argc, char *argv[]) {
     const int DEF_STEP_WIDTH =              16;
 
     // Register extra parameters
+    params.add("verbose_mode",            "verbose",  GAParameter::BOOLEAN,     &DEF_VERBOSE_MODE);
     params.add("color_output",            "color",    GAParameter::BOOLEAN,     &DEF_COLOR_OUTPUT);
     params.add("blind_solver",            "blind",    GAParameter::BOOLEAN,     &DEF_BLIND_SOLVER);
+    params.add("input_file",              "input",    GAParameter::STRING,      &INPUT_STDIN);
     params.add("min_count_of_solutions",  "minslns",  GAParameter::INT,         &DEF_MIN_COUNT_OF_SOLUTIONS);
     params.add("max_count_of_solutions",  "maxslns",  GAParameter::INT,         &DEF_MAX_COUNT_OF_SOLUTIONS);
     params.add("max_count_of_runs",       "maxruns",  GAParameter::INT,         &DEF_MAX_COUNT_OF_RUNS);
@@ -57,9 +61,19 @@ int main(int argc, char *argv[]) {
     GABoolean useBlindSolver= DEF_BLIND_SOLVER;
     params.get("blind_solver", &useBlindSolver);
 
+    // turn on/off color output (using escape squences)
     GABoolean useColorOutput= DEF_COLOR_OUTPUT;
     params.get("color_output", &useColorOutput);
     Color::enable(useColorOutput);
+
+    // turn on/off GAlib verbose mode
+    GABoolean verboseMode= DEF_VERBOSE_MODE;
+    params.get("verbose_mode", &verboseMode);
+
+    // Read input file name
+    const char *szFileName=
+      static_cast<const char *>
+      (params("input_file")->value());
 
     // Minimum of solutions (to declare as solution)
     int minSlns= DEF_MIN_COUNT_OF_SOLUTIONS;
@@ -115,19 +129,21 @@ int main(int argc, char *argv[]) {
       }
     }
 
-    // TODO: Load config file
+    if (verboseMode)
+      std::cout << Color(C_CYAN) << params << Color() << std::endl;
 
-    std::cout << Color(C_CYAN) << params << Color() << std::endl;
-
+    // Create SAT problem instace
     satProblem = new SatProblem;
 
-    // TODO: load SAT file
-    std::cerr << "Loading SAT problem...\n";
-    satProblem->loadFromInput();
-    //problem->loadFromFile("input.txt");
+    // Read input data
+    if (0==strcmp(szFileName, INPUT_STDIN))
+      satProblem->loadFromInput();
+    else
+      satProblem->loadFromFile(szFileName);
     if (satProblem->hasError())
-      throw GenericException("SatProblem::hasError() returned true");
+      throw GenericException("Invalid input data");
 
+    // Write out compilation statistics
     const int varsCount = satProblem->getVarsCount();
     std::cout << Color(C_YELLOW) << "--- Formulas count: " << Color(C_RED) << satProblem->getFormulasCount() << std::endl;
     std::cout << Color(C_YELLOW) << "--- Variables count: " << Color(C_RED) << varsCount << std::endl;
@@ -140,26 +156,29 @@ int main(int argc, char *argv[]) {
         std::cout << ", ";
     }
 
-    if (useBlindSolver)
+    // Create desired solver
+    if (useBlindSolver) {
       satSolver = new BlindSatSolver(satProblem, stepWidth);
-    else
-      satSolver = GaSatSolver::create(satProblem, params);
-
-    if (useBlindSolver)
       std::cout << Color(C_LIGHT_BLUE) << ">>> Using blind solver" << Color() << std::endl;
-    else
+    } else {
+      satSolver = GaSatSolver::create(satProblem, params);
       std::cout << Color(C_LIGHT_BLUE) << ">>> Using GAlib solver" << Color() << std::endl;
+    }
 
+    // Display message if maxFitness is increased
     fitnessWatch = new FitnessWatch(satSolver, std::cout);
     satSolver->addObserver(fitnessWatch);
 
+    // Display message if solution is discovered
     resultsWatch = new ResultsWatch(satSolver, std::cout);
     satSolver->addObserver(resultsWatch);
 
+    // Stop progress after maxSlns solutions are found
     slnsCountStop = new SolutionsCountStop(satSolver, maxSlns);
     satSolver->addObserver(slnsCountStop);
 
     if (maxTime) {
+      // Run will be stopped if its time exceeds
       timedStop = new TimedStop(satSolver, maxTime);
       satSolver->addObserver(timedStop);
     }
@@ -190,16 +209,17 @@ int main(int argc, char *argv[]) {
       if (1<maxRuns) std::cout
         << Color(C_RED) << "<<< Total" << std::setw(5) << totalSolutions << " solutions"
         << " in " << FixedFloat(3,2) << timeTotal << " s" << Color() << std::endl;
-      if (totalSolutions >= minSlns)
-        break;
       std::cout << std::endl;
+
+      if (totalSolutions >= minSlns)
+        // minSlns reached, cancel rest of runs
+        break;
     }
-    //if (totalSolutions >= minSlns)
     std::cout << Color(C_LIGHT_BLUE);
     results->writeOut(satSolver->getProblem(), std::cout);
     std::cout << Color() << std::endl;
 
-    if (!useBlindSolver) {
+    if (verboseMode && !useBlindSolver) {
       GaSatSolver *gaSolver= dynamic_cast<GaSatSolver *>(satSolver);
       GAStatistics stats= gaSolver->getStatistics();
       std::cout << std::endl << Color(C_CYAN) << stats << Color() << std::endl;
