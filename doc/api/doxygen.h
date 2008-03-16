@@ -1,9 +1,37 @@
 // This file contains no code inside
-/*
+/**
  * @file doxygen.h
  * @brief Doxygen documentation (common part)
- * @author Kamil Dudka, xdudka00@gmail.com
- * @date 2007-05-15
+ * @author Kamil Dudka <xdudka00@gmail.com>
+ * @date 2008-03-16
+ */
+
+/**
+ * @namespace FastSatSolver
+ * All public and/or non-public classes and types belongs to this namespace.
+ * There can be also some nested namespaces.
+ * @brief Namespace encapsulating whole project.
+ */
+
+/**
+ * @defgroup SatProblem SAT Problem representation
+ * @brief Internal SAT Problem representation with necessary tools for reading
+ * and working with SAT Problems.
+ * @remarks
+ * - Class @link FastSatSolver::SatProblem SatProblem @endlink - facade to this
+ * module.
+ */
+ 
+/**
+ * @defgroup fssIO I/O module
+ * @brief Set of common classes for I/O used in this project.
+ * @remarks
+ * - Exception @link FastSatSolver::GenericException GenericException
+ * @endlink - FSS specific exception
+ * - Namespace @link FastSatSolver::StreamDecorator StreamDecorator @endlink -
+ * Colored console output, etc.
+ * - Function @link FastSatSolver::printError printError @endlink - Common
+ * routine for printing errors.
  */
 
 /*

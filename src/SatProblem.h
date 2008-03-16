@@ -1,30 +1,47 @@
 #ifndef SATPROBLEMIMPL_H
 #define SATPROBLEMIMPL_H
 
+/**
+ * @file SatProblem.h
+ * @brief SAT Problem representation
+ * @author Kamil Dudka <xdudka00@gmail.com>
+ * @date 2008-03-16
+ * @ingroup SatProblem
+ */
+
 #include <string>
 #include "Scanner.h"
 
 namespace FastSatSolver {
+  class ISatItem;
+  class IFormulaEvaluator;
 
+  /**
+   * It can transform variable name to its integral index and vice versa.
+   * @brief Container for variables names.
+   * @ingroup SatProblem
+   */
   class VariableContainer
   {
     public:
       VariableContainer();
       ~VariableContainer();
       /**
-       * @return int
+       * @brief @return Returns count of variables managed by container.
        */
       int getLength ( );
 
       /**
-       * @return string
-       * @param  index
+       * @brief Read name of variable on desired index.
+       * @param index Index of variable should be in range <0, getLength()-1>
+       * @return Returns variable's name as STL string.
        */
       std::string getVarName (int index );
 
       /**
-       * @return int
-       * @param  name
+       * @brief Add variable to container, if it wasn't there before.
+       * @param name Name of variable to add.
+       * @return Return variable's integral index.
        */
       int addVariable (std::string name );
 
@@ -33,9 +50,13 @@ namespace FastSatSolver {
       Private *d;
   };
 
-
-  class ISatItem;
-  class IFormulaEvaluator;
+  /**
+   * @note The only one known implementation is now InterpretedFormula, but
+   * there is no restriction to this class. It can be any class implementing
+   * IFormulaEvaluator interface.
+   * @brief Container for evaluable formulas.
+   * @ingroup SatProblem
+   */
   class FormulaContainer
   {
     public:
@@ -43,18 +64,22 @@ namespace FastSatSolver {
       ~FormulaContainer();
 
       /**
-       * @return int
+       * @brief @return Returns count of formulas managed by container.
        */
       int getLength ( );
 
       /**
-       * @return int
-       * @param  data
+       * @brief Evaluate all formulas in container using given data and return
+       * satisfaction ratio.
+       * @param data Evaluation data to use for evaluation. Consider
+       * FastSatSolver::ISatItem interface for detail.
+       * @return Returns count of satisfaced formulas.
        */
-      int evalAll (ISatItem *data );
+      int evalAll (ISatItem *data);
 
       /**
-       * @param  formula
+       * @brief Add formula to container.
+       * @param formula Formula object to add.
        */
       void addFormula (IFormulaEvaluator *formula );
 
@@ -64,44 +89,50 @@ namespace FastSatSolver {
   };
 
 
+  /**
+   * @brief SAT Problem module's facade.
+   * @ingroup SatProblem
+   */
   class SatProblem {
     public:
       SatProblem();
       ~SatProblem();
 
       /**
-       * @param  fileName
+       * @brief Load SAT Problem specification from file
+       * @param fileName File name to read and parse.
        */
       void loadFromFile (std::string fileName );
 
       /**
-      */
+       * @brief Load SAT Problem specification from standard input.
+       */
       void loadFromInput ( );
 
       /**
-       * @return int
+       * @brief @return Returns total count of variables managed by SatProblem.
        */
       int getVarsCount ( );
 
       /**
-       * @return std::string
-       * @param  index
+       * @brief @return Returns name of variable with desired index.
+       * @param index Index of variable should be in range
+       * <0, getVarsCount()-1>.
        */
       std::string getVarName (int index );
 
       /**
-       * @return
+       * @brief @return Returns total count of formulas managed by SatProblem.
        */
       int getFormulasCount();
 
       /**
-       * @return int
-       * @param  data
+       * @brief @copydoc FastSatSolver::FormulaContainer::evalAll(ISatItem*)
        */
       int getSatsCount (ISatItem *data);
 
       /**
-       * @return bool
+       * @brief @return Returns true if SAT Problem is @b not valid.
        */
       bool hasError ( );
 
