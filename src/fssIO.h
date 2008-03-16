@@ -15,7 +15,7 @@
 namespace FastSatSolver {
 
   /**
-   * @brief Common-usage exception containing error message inside.\
+   * @brief Common-usage exception containing error message inside.
    * @ingroup fssIO
    */
   class GenericException {

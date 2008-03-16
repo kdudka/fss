@@ -145,10 +145,8 @@ namespace FastSatSolver {
        */
       RawScanner (FILE* fd );
       virtual ~RawScanner();
-
-      /**
-       * @brief @copydoc FastSatSolver::IScanner::readNext(Token*)
-       */
+      
+      // see IScanner dox
       virtual int readNext (Token* token );
 
     private:
@@ -171,9 +169,7 @@ namespace FastSatSolver {
       ScannerStringHandler (IScanner *scanner, VariableContainer *vc );
       virtual ~ScannerStringHandler();
 
-      /**
-       * @brief @copydoc FastSatSolver::IScanner::readNext(Token*)
-       */
+      // see IScanner dox
       virtual int readNext (Token* token );
 
     private:
@@ -197,9 +193,7 @@ namespace FastSatSolver {
       ScannerFormulaHandler (IScanner *scanner, FormulaContainer *fc );
       virtual ~ScannerFormulaHandler();
 
-      /**
-       * @brief @copydoc FastSatSolver::IScanner::readNext(Token*)
-       */
+      // see IScanner dox
       virtual int readNext (Token* token );
 
     private:

@@ -3,10 +3,8 @@
 #include <string>
 #include <ga/GAParameter.h>
 #include <ga/GAStatistics.h>
-#include <ga/GASimpleGA.h>
 #include "fssIO.h"
 #include "SatProblem.h"
-#include "SatSolver.h"
 #include "BlindSatSolver.h"
 #include "GaSatSolver.h"
 #include "SatSolverObserver.h"
@@ -14,6 +12,16 @@
 using std::string;
 using namespace FastSatSolver;
 using namespace FastSatSolver::StreamDecorator;
+
+template <
+class OBSERVER,
+      class SUBJECT,
+      class ARG>
+      inline OBSERVER* createAttached(SUBJECT *subject, ARG &arg) {
+        OBSERVER *observer= new OBSERVER(subject, arg);
+        subject->addObserver(observer);
+        return observer;
+      }
 
 int main(int argc, char *argv[]) {
   int exitCode = 0;
@@ -178,22 +186,17 @@ int main(int argc, char *argv[]) {
     }
 
     // Display message if maxFitness is increased
-    fitnessWatch = new FitnessWatch(satSolver, std::cout);
-    satSolver->addObserver(fitnessWatch);
+    fitnessWatch = createAttached<FitnessWatch>(satSolver, std::cout);
 
     // Display message if solution is discovered
-    resultsWatch = new ResultsWatch(satSolver, std::cout);
-    satSolver->addObserver(resultsWatch);
+    resultsWatch = createAttached<ResultsWatch>(satSolver, std::cout);
 
     // Stop progress after maxSlns solutions are found
-    slnsCountStop = new SolutionsCountStop(satSolver, maxSlns);
-    satSolver->addObserver(slnsCountStop);
+    slnsCountStop = createAttached<SolutionsCountStop>(satSolver, maxSlns);
 
-    if (maxTime) {
+    if (maxTime)
       // Run will be stopped if its time exceeds
-      timedStop = new TimedStop(satSolver, maxTime);
-      satSolver->addObserver(timedStop);
-    }
+      timedStop = createAttached<TimedStop>(satSolver, maxTime);
 
     int totalSolutions = 0;
     float timeTotal = 0.0;

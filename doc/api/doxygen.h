@@ -27,7 +27,18 @@ namespace FastSatSolver {
   */
   
  /**
-  * @defgroup SatProblem SAT Problem representation
+  * @defgroup SatSolver SAT Solver
+  * @brief Class AbstractSatSolver with its derived classes BlindSatSolver and
+  * GaSatSolver and their observers.
+  * @remarks
+  * - Class GaSatSolver - solver using GAlib library to solve SAT problem
+  * - Class BlindSatSolver - solver using brute force method to solve SAT
+  * problem
+  * - Class AbstractSatSolver - common interface of both solvers
+  */
+ 
+ /**
+  * @defgroup SatProblem SAT Problem
   * @brief Internal SAT Problem representation with necessary tools for reading
   * and working with SAT Problems.
   * @remarks
@@ -35,7 +46,7 @@ namespace FastSatSolver {
   * - Class InterpretedFormula - interpreted proposition formula implementation
   * - Class SatProblem - facade to this module
   */
-  
+   
  /**
   * @defgroup fssIO I/O module
   * @brief Set of common classes for I/O used in this project.

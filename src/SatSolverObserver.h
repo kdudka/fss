@@ -1,6 +1,15 @@
 #ifndef SATSOLVEROBSERVER_H
 #define SATSOLVEROBSERVER_H
 
+/**
+ * @file SatSolverObserver.h
+ * @brief Set of useful observers attachable to AbstractSatSolver or its base
+ * classes.
+ * @author Kamil Dudka <xdudka00@gmail.com>
+ * @date 2008-03-16
+ * @ingroup SatSolver
+ */
+
 #include <iostream>
 #include "SatSolver.h"
 
