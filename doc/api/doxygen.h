@@ -1,61 +1,75 @@
 // This file contains no code inside
-/**
- * @file doxygen.h
- * @brief Doxygen documentation (common part)
- * @author Kamil Dudka <xdudka00@gmail.com>
- * @date 2008-03-16
- */
+namespace FastSatSolver {
+ /**
+  * @file doxygen.h
+  * @brief Doxygen documentation (common part)
+  * @author Kamil Dudka <xdudka00@gmail.com>
+  * @date 2008-03-16
+  */
+  
+ /**
+  * @mainpage
+  * @brief SAT Problem solver using GAlib library.
+  * @author Kamil Dudka <xdudka00@gmail.com>
+  * @date 2008-03-16
+  * @remarks
+  * @htmlonly
+  * <p>You can see overview in <a class="el" href="modules.html">Modules</a>
+  * section.</p>
+  * @endhtmlonly
+  */
 
-/**
- * @namespace FastSatSolver
- * All public and/or non-public classes and types belongs to this namespace.
- * There can be also some nested namespaces.
- * @brief Namespace encapsulating whole project.
- */
-
-/**
- * @defgroup SatProblem SAT Problem representation
- * @brief Internal SAT Problem representation with necessary tools for reading
- * and working with SAT Problems.
- * @remarks
- * - Class @link FastSatSolver::SatProblem SatProblem @endlink - facade to this
- * module.
- */
- 
-/**
- * @defgroup fssIO I/O module
- * @brief Set of common classes for I/O used in this project.
- * @remarks
- * - Exception @link FastSatSolver::GenericException GenericException
- * @endlink - FSS specific exception
- * - Namespace @link FastSatSolver::StreamDecorator StreamDecorator @endlink -
- * Colored console output, etc.
- * - Function @link FastSatSolver::printError printError @endlink - Common
- * routine for printing errors.
- */
+ /**
+  * @namespace FastSatSolver
+  * All public and/or non-public classes and types belongs to this namespace.
+  * There can be also some nested namespaces.
+  * @brief Namespace encapsulating whole project.
+  */
+  
+ /**
+  * @defgroup SatProblem SAT Problem representation
+  * @brief Internal SAT Problem representation with necessary tools for reading
+  * and working with SAT Problems.
+  * @remarks
+  * - Interface IFormulaEvaluator - evaulable proposition formula's interface
+  * - Class InterpretedFormula - interpreted proposition formula implementation
+  * - Class SatProblem - facade to this module
+  */
+  
+ /**
+  * @defgroup fssIO I/O module
+  * @brief Set of common classes for I/O used in this project.
+  * @remarks
+  * - Exception GenericException - FSS specific exception
+  * - Namespace StreamDecorator - Colored console output, etc.
+  * - Function @link FastSatSolver::printError printError @endlink - Common
+  * routine for printing errors
+  */
+} // namespace FastSatSolver
 
 /*
- * @mainpage
- * @brief Library for work with objects in shared memory
- * @author Kamil Dudka, xdudka00@gmail.com
- * @date 2007-05-15
- * @remarks
- * @htmlonly
- * <p>You can see overview in <a class="el" href="modules.html">Modules</a> section.</p>
- * <p>Command-line utility for manipulating with shared segment: <a class="el" href="group__sharectl.html#_details">sharectl</a></p>
- * <p>Quick links to library fundamental classes:</p>
- * <ul>
- * <li style="margin-bottom:1em;"><a class="el" href="classShare_1_1SharedObject.html">SharedObject</a> - shareable object base class</li>
- * <li style="margin-bottom:1em;"><a class="el" href="classShare_1_1RelocPtr.html">RelocPtr</a> - relocable pointer type</li>
- * <li style="margin-bottom:1em;"><a class="el" href="classShare_1_1ShareManager.html">ShareManager</a> - Gateway to shared segment</li>
- * <li style="margin-bottom:1em;"><a class="el" href="classShare_1_1Allocator.html">Allocator</a> - STL allocator</li>
- * <li style="margin-bottom:1em;"><a class="el" href="classShare_1_1Vector.html">Vector</a> - STL vector</li>
- * <li style="margin-bottom:1em;"><a class="el" href="classShare_1_1String.html">String</a> - STL string</li>
- * <li style="margin-bottom:1em;"><a class="el" href="classShare_1_1Map.html">Map</a> - STL map</li>
+  * <p>Command-line utility for manipulating with shared segment: <a class="el"
+  href="group__sharectl.html#_details">sharectl</a></p>
+  * <p>Quick links to library fundamental classes:</p>
+  * <ul>
+  * <li style="margin-bottom:1em;"><a class="el"
+  href="classShare_1_1SharedObject.html">SharedObject</a> - shareable object
+base  class</li>
+  * <li style="margin-bottom:1em;"><a class="el"
+  href="classShare_1_1RelocPtr.html">RelocPtr</a> - relocable pointer type</li>
+  * <li style="margin-bottom:1em;"><a class="el"
+  href="classShare_1_1ShareManager.html">ShareManager</a> - Gateway to shared
+  segment</li>
+  * <li style="margin-bottom:1em;"><a class="el"
+  href="classShare_1_1Allocator.html">Allocator</a> - STL allocator</li>
+ * <li style="margin-bottom:1em;"><a class="el"
+href="classShare_1_1Vector.html">Vector</a> - STL vector</li>
+ * <li style="margin-bottom:1em;"><a class="el"
+href="classShare_1_1String.html">String</a> - STL string</li>
+ * <li style="margin-bottom:1em;"><a class="el"
+href="classShare_1_1Map.html">Map</a> - STL map</li>
  * </ul>
- * @endhtmlonly
- */
-
+*/
 /*
  * @defgroup core Core library classes
  * @brief Library interface - core functionality
