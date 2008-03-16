@@ -140,5 +140,42 @@ namespace FastSatSolver {
       << Color() << std::endl;
   }
 
+  struct ProgressWatch::Private {
+    AbstractProcess *process;
+    int             stepsTotal;
+    int             last;
+    std::ostream    &stream;
+
+    Private(std::ostream &streamTo): stream(streamTo) { }
+  };
+  ProgressWatch::ProgressWatch(AbstractProcess *process, int stepsTotal, std::ostream &streamTo):
+    d(new Private(streamTo))
+  {
+    d->process = process;
+    d->stepsTotal = stepsTotal;
+    d->last = 0;
+  }
+  ProgressWatch::~ProgressWatch() {
+    delete d;
+  }
+  void ProgressWatch::notify() {
+    using namespace StreamDecorator;
+
+    // Check percentage value
+    const int currentStep= d->process->getStepsCount();
+    const int percents=
+      currentStep*100 /
+      d->stepsTotal;
+    if (percents == d->last)
+      return;
+    d->last = percents;
+
+    // Write out message
+    d->stream
+      << Color(C_GREEN) << "--- Progress:"
+      << std::setw(3) << percents << "%"
+      << Color() << std::endl;
+  }
+
 } // namespace FastSatSolver
 

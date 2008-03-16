@@ -49,6 +49,16 @@ namespace FastSatSolver {
       Private *d;
   };
 
+  class ProgressWatch: public IObserver {
+    public:
+      ProgressWatch(AbstractProcess *process, int stepsTotal, std::ostream &streamTo);
+      virtual ~ProgressWatch();
+      virtual void notify();
+    private:
+      struct Private;
+      Private *d;
+  };
+
 } // namespace FastSatSolver
 
 #endif // SATSOLVEROBSERVER_H

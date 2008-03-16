@@ -19,13 +19,14 @@ int main(int argc, char *argv[]) {
   int exitCode = 0;
 
   // Used for final clean-up on exit
-  SatProblem *satProblem = 0;
-  AbstractSatSolver *satSolver = 0;
-  SolutionsCountStop *slnsCountStop = 0;
-  TimedStop *timedStop = 0;
-  FitnessWatch *fitnessWatch = 0;
-  ResultsWatch *resultsWatch = 0;
-  SatItemVector *results = 0;
+  SatProblem          *satProblem = 0;
+  AbstractSatSolver   *satSolver = 0;
+  ProgressWatch       *progressWatch = 0;
+  SolutionsCountStop  *slnsCountStop = 0;
+  TimedStop           *timedStop = 0;
+  FitnessWatch        *fitnessWatch = 0;
+  ResultsWatch        *resultsWatch = 0;
+  SatItemVector       *results = 0;
   try {
     // Parse cmd-line parameters
     GAParameterList params;
@@ -156,11 +157,22 @@ int main(int argc, char *argv[]) {
         std::cout << ", ";
     }
 
-    // Create desired solver
+    // create desired solver
     if (useBlindSolver) {
+
+      // create blind solver
       satSolver = new BlindSatSolver(satProblem, stepWidth);
       std::cout << Color(C_LIGHT_BLUE) << ">>> Using blind solver" << Color() << std::endl;
+
+      // attach progress indicator
+      const int progressBits = satProblem->getVarsCount()-stepWidth;
+      if (progressBits > 0) {
+        progressWatch = new ProgressWatch(satSolver, 1<<progressBits, std::cout);
+        satSolver->addObserver(progressWatch);
+      }
     } else {
+
+      // create GA solver
       satSolver = GaSatSolver::create(satProblem, params);
       std::cout << Color(C_LIGHT_BLUE) << ">>> Using GAlib solver" << Color() << std::endl;
     }
@@ -235,6 +247,7 @@ int main(int argc, char *argv[]) {
   delete fitnessWatch;
   delete timedStop;
   delete slnsCountStop;
+  delete progressWatch;
   delete satSolver;
   delete satProblem;
 
