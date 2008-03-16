@@ -65,7 +65,7 @@ namespace FastSatSolver {
 
   inline void printError(std::string szMsg) {
     using namespace StreamDecorator;
-    std::cerr << Color(C_RED) << "!!! " << szMsg << Color() << std::endl;
+    std::cerr << Color(C_RED) << "!!! " << Color() << szMsg << std::endl;
   }
 
 } // namespace FastSatSolver

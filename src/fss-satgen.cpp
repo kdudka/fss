@@ -55,18 +55,18 @@ class RandGenerator {
 
 /**
  * USAGE:
- * ./randsat VARCOUNT FORMSCOUNT
+ * ./fss-satgen VARCOUNT FORMSCOUNT
  */
 int main(int argc, char *argv[]) {
   if (argc<3) {
-    std::cerr << "Usage: randsat VARCOUNT FORMSCOUNT" << std::endl;
+    std::cerr << "Usage: fss-satgen VARCOUNT FORMSCOUNT" << std::endl;
     return -1;
   }
 
   const int VARCOUNT = atoi(argv[1]);
   const int FORMSCOUNT = atoi(argv[2]);
   if (0==VARCOUNT || 0==FORMSCOUNT) {
-    std::cerr << "Usage: randsat VARCOUNT FORMSCOUNT" << std::endl;
+    std::cerr << "Usage: fss-satgen VARCOUNT FORMSCOUNT" << std::endl;
     return -1;
   }
 

@@ -32,7 +32,7 @@ ADD_EXECUTABLE(fss
   BlindSatSolver.cpp GaSatSolver.cpp)
 TARGET_LINK_LIBRARIES(fss ga)
 
-ADD_EXECUTABLE(randsat randsat.cpp)
+ADD_EXECUTABLE(fss-satgen fss-satgen.cpp)
 
 #TARGET_LINK_LIBRARIES(rrv-visualize rrv)
 # make install
