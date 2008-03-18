@@ -25,6 +25,39 @@ class OBSERVER,
       }
 
 int main(int argc, char *argv[]) {
+  if (argc < 3) {
+    std::cerr <<
+      "Usage\n"
+      "=====\n"
+      "fss NAME VALUE [NAME VALUE [NAME VALUE [...]]]\n"
+      "where NAME is name of parameter and VALUE its value\n"
+      "\n"
+      "Possible parameters are (abbreviation in parenthesis)\n"
+      "=====================================================\n"
+      "input_file(input)............... File containing SAT problem specification.\n"
+      "                                 '-' means standard input.\n"
+      "color_output(color)............. 1/0 turns on/off console colored output.\n"
+      "verbose_mode(verbose)........... 1/0 turns on/off GAlib verbose mode.\n"
+      "blind_solver(blind)............. Switch between blind and GA solver.\n"
+      "                                 1 means blind solver,\n"
+      "                                 0 means GA solver(default).\n"
+      "step_width(stepw)............... (only for blind solver) granularity of solver's\n"
+      "                                 notifications and control. Default is 16.\n"
+      "min_count_of_solutions(minslns). Minimal count of solutions requested.\n"
+      "max_count_of_solutions(maxslns). Maximal count of solutions to look for.\n"
+      "max_count_of_runs(maxruns)...... GA is restarted for max. maxruns times if\n"
+      "                                 not all minslns solutions are found.\n"
+      "max_time_per_run(maxtime)....... Run is be stopped unconditionally if maxtime\n"
+      "                                 time is exceed (in miliseconds).\n"
+      "term_upon_convergence(convterm). 0 -> Run is be stopped after ngen generations.\n"
+      "                                 1 -> Run is be stopped upon convergence.\n"
+      "\n"
+      "NOTE\n"
+      "====\n"
+      "There are more parameters for GA solver. Consider GAlib documentation,\n"
+      "especially its class GASimpleGA.\n";
+    return 1;
+  }
   int exitCode = 0;
 
   // Used for final clean-up on exit
@@ -43,7 +76,7 @@ int main(int argc, char *argv[]) {
     GaSatSolver::registerDefaultParameters(params);
 
     // Default values of parameters
-    const char INPUT_STDIN[] = "-";
+    const char DEF_INPUT_FILE[] = "";
     const GABoolean DEF_VERBOSE_MODE = gaFalse;
     const GABoolean DEF_COLOR_OUTPUT = gaFalse;
     const GABoolean DEF_BLIND_SOLVER = gaFalse;
@@ -57,7 +90,7 @@ int main(int argc, char *argv[]) {
     params.add("verbose_mode",            "verbose",  GAParameter::BOOLEAN,     &DEF_VERBOSE_MODE);
     params.add("color_output",            "color",    GAParameter::BOOLEAN,     &DEF_COLOR_OUTPUT);
     params.add("blind_solver",            "blind",    GAParameter::BOOLEAN,     &DEF_BLIND_SOLVER);
-    params.add("input_file",              "input",    GAParameter::STRING,      &INPUT_STDIN);
+    params.add("input_file",              "input",    GAParameter::STRING,      &DEF_INPUT_FILE);
     params.add("min_count_of_solutions",  "minslns",  GAParameter::INT,         &DEF_MIN_COUNT_OF_SOLUTIONS);
     params.add("max_count_of_solutions",  "maxslns",  GAParameter::INT,         &DEF_MAX_COUNT_OF_SOLUTIONS);
     params.add("max_count_of_runs",       "maxruns",  GAParameter::INT,         &DEF_MAX_COUNT_OF_RUNS);
@@ -84,6 +117,8 @@ int main(int argc, char *argv[]) {
     const char *szFileName=
       static_cast<const char *>
       (params("input_file")->value());
+    if (0==szFileName)
+      szFileName = DEF_INPUT_FILE;
 
     // Minimum of solutions (to declare as solution)
     int minSlns= DEF_MIN_COUNT_OF_SOLUTIONS;
@@ -146,6 +181,7 @@ int main(int argc, char *argv[]) {
     satProblem = new SatProblem;
 
     // Read input data
+    static const char INPUT_STDIN[] = "-";
     if (0==strcmp(szFileName, INPUT_STDIN))
       satProblem->loadFromInput();
     else
