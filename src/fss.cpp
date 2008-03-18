@@ -135,6 +135,9 @@ int main(int argc, char *argv[]) {
       printError("max_count_of_solutions out of range, using default");
       maxSlns = DEF_MAX_COUNT_OF_SOLUTIONS;
     }
+    if (maxSlns < minSlns)
+      maxSlns = minSlns;
+
 
     // Maximum nuber of runs (if satisfaction is not reachable)
     int maxRuns= DEF_MAX_COUNT_OF_RUNS;
