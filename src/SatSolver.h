@@ -118,7 +118,7 @@ namespace FastSatSolver {
       virtual ~IProcess() { }
       
       /**
-       * @brief Start process execution. This method returns control process
+       * @brief Start process execution. This method returns control
        * after process ends (or after it is stopped by stop() or reset() method)
        */
       virtual void start() = 0;

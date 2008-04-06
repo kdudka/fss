@@ -5,22 +5,46 @@
 % \FITproject{BP}
 
 \chapter{Úvod}
-Radiozita je pokroèilá zobrazovací metoda pou¾ívaná ve fotorealistické grafice. Její výpoèet je èasovì nároèný. Tato práce se zabývá jednoduchou implementací výpoètu radiozity, která vyu¾ívá akceleraci zalo¾enou na \texttt{OpenGL}.
+\begin{itemize}
+ \item definice problému
+ \item bì¾né algoritmy, slo¾itost
+ \item cíl projektu - srovnání bì¾ného alg. s GA
+\end{itemize}
+lze stáhnout z \href{http://dudka.cz/fss}{{\tt http://dudka.cz/fss}}.
 
-Pomocí vzniklého programu byly vypoèítány vzorové scény, které se do této dokumentace neve¹ly -- lze stáhnout z \href{http://dudka.cz/rrv}{{\tt http://dudka.cz/rrv}}. Kromì toho lze z webu stáhnout krátké \href{http://dudka.cz/rrv/files/video/room4.x264.avi?action=download}{video} (asi 20 vteøin), které ukazuje, jak se ¹íøí radiozita v prùbìhu výpoètu.
-
-Nedílnou souèástí této dokumentace je dokumentace API a diagramy tøíd, které jsou dostupné rovnì¾ na webu projektu.
 
 \chapter{Teoretická èást}\label{theory}
-\section{Radiozita}
+\section{Genetický algoritmus}
+\section{Knihova \texttt{GAlib}}
 
 \chapter{Návrh øe¹ení}\label{design}
+\begin{itemize}
+ \item cíl návrhu - znovupou¾itelnost
+\end{itemize}
+
+\section{Reprezentace problému}
+\begin{itemize}
+ \item reprezentace problému - vstupní data
+ \item interní reprezentace problému - generiènost
+ \item parser - pøevod vstupních dat na interní reprezentaci
+\end{itemize}
+
+\section{Abstrakce prohledávaèe}
+\begin{itemize}
+ \item abstraktní solver, vy¹¹í abstrakce, rozhraní observery
+ \item slepý prohledávaè
+ \item GA prohledávaè - pouhé napojení na knihovnu GAlib
+\end{itemize}
+
+\section{Observery}
+\begin{itemize}
+ \item observery - seznam, úèel, jednoduchý pøíklad
+\end{itemize}
 
 
 \chapter{Implementace}\label{implementation}
 \cite{Stroustrup}
 
- 
 \section{Sestavení a instalace}
 Pro úspì¹né sestavení je potøeba mít nainstalovanou knihovnu GLUT, knihovny OpenGL, CMake a podporovaný pøekladaè. Vlastní sestavení a instalace jsou velmi jednoduché a~pøí\-moèaré:
 \begin{verbatim}

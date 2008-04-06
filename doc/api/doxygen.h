@@ -14,8 +14,16 @@ namespace FastSatSolver {
   * @date 2008-03-16
   * @remarks
   * @htmlonly
-  * <p>You can see overview in <a class="el" href="modules.html">Modules</a>
-  * section.</p>
+  * <ul>
+  * <li>Module <a class="el" href="group__SatSolver.html">SatSolver</a> -
+  * Class AbstractSatSolver with its derived classes BlindSatSolver and
+  * GaSatSolver and their observers.</li>
+  * <li>Module <a class="el" href="group__SatProblem.html">SatProblem</a> -
+  * Internal SAT Problem representation with necessary tools for reading
+  * and working with SAT Problems.</li>
+  * <li><a class="el" href="group__fssIO.html">I/O module</a> -
+  * Set of common classes for I/O used in this project.</li>
+  * </ul>
   * @endhtmlonly
   */
 

@@ -14,7 +14,14 @@ namespace FastSatSolver {
 
   typedef std::stack<bool> TRuntimeStack;
 
+  /**
+   * @brief Precedence table size (2 dimensional table)
+   */
   static const int TABLE_SIZE = 8;
+
+  /**
+   * @brief Precedence table
+   */
   static const EToken table[TABLE_SIZE][TABLE_SIZE] = {
     /*            0             1             2             3             4             5             6             7             */
     /*            XOR           OR            AND           NOT           (             )             i             $             */
