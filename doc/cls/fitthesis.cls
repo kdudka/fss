@@ -1,4 +1,4 @@
-% ----------------------------------------------------------------------------
+% % ----------------------------------------------------------------------------
 % FIT thesis
 % ----------------------------------------------------------------------------
 % (C) 2007 Zdenek Vasicek
@@ -56,8 +56,8 @@
 \def\@vut@EN{Brno University of Technology}
 \def\@fit@CS{Fakulta informaèních technologií}
 \def\@fit@EN{Faculty of Information Technology}
-\def\@author@CS{Autoøi práce}
-\def\@author@EN{Authors}
+\def\@author@CS{Autor práce}
+\def\@author@EN{Author}
 \def\@supervisor@CS{Vedoucí práce}
 \def\@supervisor@EN{Supervisor}
 \def\@dep@CS{Ústav}
@@ -82,8 +82,8 @@ Práce je chránìna autorským zákonem a její u¾ití bez udìlení opráv\-nìní autorem
 %Vyber typu projektu
 \newcommand{\set@project}[1]{%
  \naselfalse
- \ifEqString{#1}{BP}{Týmový projekt do pøedmìtu PGR}{\@projecttype@CS}%
- \ifEqString{#1}{BP}{Team project to course PGR}{\@projecttype@EN}%
+ \ifEqString{#1}{BP}{Projekt do pøedmìtu EVO}{\@projecttype@CS}%
+ \ifEqString{#1}{BP}{Project for course EVO}{\@projecttype@EN}%
  \ifEqString{#1}{DP}{Diplomová práce}{\@projecttype@CS}%
  \ifEqString{#1}{DP}{Master's thesis}{\@projecttype@EN}%
  \ifnasel
@@ -347,7 +347,7 @@ Práce je chránìna autorským zákonem a její u¾ití bez udìlení opráv\-nìní autorem
 
 \vfill
 
-\mkuctxt{16}{\@title@CS}
+\mkuctxt{14}{\@title@CS}
 \mkuctxt{10}{\@projecttype@CS}
 
 \vfill
@@ -356,12 +356,7 @@ Práce je chránìna autorským zákonem a její u¾ití bez udìlení opráv\-nìní autorem
 %\mkuctxt{10}{\@projecttype@EN}
 
 
-\mktxt{14}{\MakeUppercase{\@author@CS} \hfill}% \get@author}
-\mktxt{10}{David Baøina}
-\mktxt{10}{Kamil Dudka}
-\mktxt{10}{Jakub Filák}
-\mktxt{10}{Luká¹ Hefka}
-
+\mktxt{14}{\MakeUppercase{\@author@CS} \hfill\get@author}
 
 %\mktxt{14}{\MakeUppercase{\@supervisor@CS} \hfill \get@supervisor}
 %\mkuctxt{10}{\@supervisor@EN}

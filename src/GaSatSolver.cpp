@@ -6,6 +6,12 @@
 #include "SatProblem.h"
 #include "GaSatSolver.h"
 
+//#include <ga/GASStateGA.h>
+//#include <ga/GAIncGA.h>
+//#include <ga/GADemeGA.h>
+
+typedef GASimpleGA TGeneticAlgorithm;
+
 namespace FastSatSolver {
 
   // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -58,8 +64,8 @@ namespace FastSatSolver {
     GaSatSolver               *solver;
     float                     maxFitness;
     GA1DBinaryStringGenome    *genome;
-    GASimpleGA                *ga;
-    SatItemSet              *resultSet;
+    TGeneticAlgorithm         *ga;
+    SatItemSet                *resultSet;
 
     static float fitness(GAGenome &);
   };
@@ -72,12 +78,13 @@ namespace FastSatSolver {
     d->maxFitness = 0.0;
     const int varsCount = problem->getVarsCount();
     d->genome = new GA1DBinaryStringGenome(varsCount, Private::fitness, d);
-    d->ga = new GASimpleGA(*(d->genome));
+    d->ga = new TGeneticAlgorithm(*(d->genome));
     d->ga->parameters(params);
     bool termUponConvergence = false;
     params.get("term_upon_convergence", &termUponConvergence);
     if (termUponConvergence)
-      d->ga->terminator(GAGeneticAlgorithm::TerminateUponPopConvergence);
+      d->ga->terminator(GAGeneticAlgorithm::TerminateUponConvergence);
+      //d->ga->terminator(GAGeneticAlgorithm::TerminateUponPopConvergence);
     d->resultSet = new SatItemSet;
   }
   GaSatSolver::~GaSatSolver() {
@@ -92,7 +99,7 @@ namespace FastSatSolver {
     return obj;
   }
   void GaSatSolver::registerDefaultParameters(GAParameterList &params) {
-    GASimpleGA::registerDefaultParameters(params);
+    TGeneticAlgorithm::registerDefaultParameters(params);
     const bool FALSE = false;
     params.add("term_upon_convergence", "convterm", GAParameter::BOOLEAN, &FALSE);
   }
