@@ -7,11 +7,11 @@
 \chapter{Úvod}
 Úkolem bylo vytvoøit program, který øe¹í problém \textit{splnitelnosti mno¾iny výrokových pro\-mìnných} pomocí \textit{gentického algoritmu}.
 
-Problém splnitelnosti mno¾iny výrokových promìnných je znám v literatuøe jako \textit{SAT Problém}\footnote{Název je pøevzatý z angliètiny -- SATisfability problem.}. Jedná se o takzvaný \textit{rozhodovací problém}, jeho pøesnou definici je mo¾né nalézt v~\cite{TIN}. Rozhodovací problém je zadán mno¾inou formulí výrokové logiky. Úkolem je rozhodnout, jestli existuje takové ohodnocení výrokových promìnných, pro které jsou v¹echny formule splnìné.
+Problém splnitelnosti mno¾iny výrokových promìnných je znám v literatuøe jako \textit{SAT Problém}\footnote{Název je pøevzatý z angliètiny -- SATisfiability problem.}. Jedná se o takzvaný \textit{rozhodovací problém}, jeho pøesnou definici je mo¾né nalézt v~\cite{TIN}. Rozhodovací problém je zadán mno¾inou formulí výrokové logiky. Úkolem je rozhodnout, jestli existuje takové ohodnocení výrokových promìnných, pro které jsou v¹echny formule splnìné.
 
 Algoritmus, který tento problém rozhoduje, spadá do tøídy slo¾itosti \textit{NP}. Pøesnou definici této tøídy slo¾itosti a odpovídající dùkaz opìt naleznete v \cite{TIN}. Netriviální problémy spadající do této tøídy slo¾itosti není mo¾né øe¹it bì¾nými algoritmy na souèasném HW v~rozumném èase.
 
-Tato práce se zabývá øe¹ením SAT problému pomocí tzv. \textit{genetického algoritmu}, který umo¾òuje øe¹it (nìkteré) instance tohoto problému ve výraznì krat¹ím èase, ne¾ který odpovídá teoretické slo¾itosti. Nevýhodou tohoto pøístupu je, ¾e není zaruèeno, ¾e bude øe¹ení nalezeno v koneèném èase, pokud existuje\footnote{Experimentálnì v¹ak bylo zji¹tìno, ¾e pøi vhodnì zvolených paramtrech, se øe¹ení \textit{vìt¹inou} najde. Za urèitých pøedpokladù lze navíc dokázat, ¾e genetický algoritmus nalezne existující øe¹ení v nekoneèném èase.}.
+Tato práce se zabývá øe¹ením SAT problému pomocí tzv. \textit{genetického algoritmu}, díky kterému je mo¾né øe¹it (nìkteré) instance tohoto problému ve výraznì krat¹ím èase, ne¾ který odpovídá teoretické slo¾itosti. Nevýhodou tohoto pøístupu je, ¾e není zaruèeno, ¾e bude øe¹ení nalezeno v koneèném èase, pokud existuje\footnote{Experimentálnì v¹ak bylo zji¹tìno, ¾e pøi vhodnì zvolených paramtrech, se øe¹ení \textit{vìt¹inou} najde. Za~urèitých pøedpokladù lze navíc matematicky dokázat, ¾e genetický algoritmus nalezne existující øe¹ení v~nekoneèném èase.}.
 
 Vytvoøený program doká¾e zadaný SAT problém øe¹it jak pomocí genetického algoritmu, tak pomocí bì¾ného \textit{(slepého)} algoritmu. V závìru práce jsou tyto pøístupy porovnány na rùzných instancích SAT problému. Kompletní zdrojové kódy a programovou dokumentaci je mo¾né stáhnout z \href{http://dudka.cz/fss}{{\tt http://dudka.cz/fss}}.
 
@@ -22,9 +22,11 @@ Vytvoøený program doká¾e zadaný SAT problém øe¹it jak pomocí genetického algorit
 \section{Knihova \texttt{GAlib}}
 
 \chapter{Návrh øe¹ení}\label{design}
-\cite{Stroustrup}\cite{Gamma}\cite{Sutter}
+Hlavním cílem návrhu byla znovupou¾itelnost\cite{Stroustrup}\cite{Gamma}\cite{Sutter}\cite{Pecin}. Vìt¹ina modulù nemá ¾ádné externí závislosti. Pokud bychom napø. místo knihovny \texttt{GAlib} chtìli pou¾ít jinou knihovnu, staèilo by nadefinovat dvì nové tøídy pracující se stávajícím objektovým modelem. Program je z hlediska návrhu dìlen do nìkolika èástí:
 \begin{itemize}
- \item cíl návrhu - znovupou¾itelnost
+ \item \textbf{Reprezentace problému} - modul \texttt{SatProblem}
+ \item \textbf{Abstrakce prohledávaèe, observery} - modul \texttt{SatSolver}
+ \item \textbf{Implementace prohledávaèe} - moduly \texttt{GaSatSolver} a \texttt{BlindSatSolver}
 \end{itemize}
 
 \section{Reprezentace problému}
