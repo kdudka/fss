@@ -15,14 +15,14 @@ using namespace FastSatSolver::StreamDecorator;
 
 // Create observer OBSERVER and attach it to subject
 template <
-class OBSERVER,
+      class OBSERVER,
       class SUBJECT,
       class ARG>
-      inline OBSERVER* createAttached(SUBJECT *subject, ARG &arg) {
-        OBSERVER *observer= new OBSERVER(subject, arg);
-        subject->addObserver(observer);
-        return observer;
-      }
+inline OBSERVER* createAttached(SUBJECT *subject, ARG &arg) {
+      OBSERVER *observer= new OBSERVER(subject, arg);
+      subject->addObserver(observer);
+      return observer;
+}
 
 int main(int argc, char *argv[]) {
   if (argc < 3) {

@@ -22,34 +22,150 @@ Vytvoøený program doká¾e zadaný SAT problém øe¹it jak pomocí genetického algorit
 \section{Knihova \texttt{GAlib}}
 
 \chapter{Návrh øe¹ení}\label{design}
-Hlavním cílem návrhu byla znovupou¾itelnost\cite{Stroustrup}\cite{Gamma}\cite{Sutter}\cite{Pecin}. Vìt¹ina modulù nemá ¾ádné externí závislosti. Pokud bychom napø. místo knihovny \texttt{GAlib} chtìli pou¾ít jinou knihovnu, staèilo by nadefinovat dvì nové tøídy pracující se stávajícím objektovým modelem. Program je z hlediska návrhu dìlen do nìkolika èástí:
+Hlavním cílem návrhu byla znovupou¾itelnost\cite{Gamma}\cite{Pecin}\cite{Stroustrup}\cite{Sutter}. Vìt¹ina modulù nemá ¾ádné externí závislosti. Pokud bychom napø. místo knihovny \texttt{GAlib} chtìli pou¾ít jinou knihovnu, staèilo by nadefinovat dvì nové tøídy pracující se stávajícím objektovým modelem. Program je z hlediska návrhu dìlen do nìkolika èástí:
 \begin{itemize}
  \item \textbf{Reprezentace problému} - modul \texttt{SatProblem}
  \item \textbf{Abstrakce prohledávaèe, observery} - modul \texttt{SatSolver}
  \item \textbf{Implementace prohledávaèe} - moduly \texttt{GaSatSolver} a \texttt{BlindSatSolver}
 \end{itemize}
 
-\section{Reprezentace problému}
-\begin{itemize}
- \item reprezentace problému - vstupní data
- \item interní reprezentace problému - generiènost
- \item parser - pøevod vstupních dat na interní reprezentaci
-\end{itemize}
+\section{Vstupních data}
+Z matematického pohledu je instance problému definována jako mno¾ina formulí výrokové logiky. Tyto formule tedy tvoøí vstupní data programu a je potøeba je programu nìjak pøedat. K tomuto úèelu byl vytvoøen jednoduchý jazyk pro zápis výrokových formulí, kterému program rozumí.
+
+Tento jazyk je podmno¾inou jazyka pro zápis logických výrazù v C++. Výrokové pro\-mìnné jsou pojmenovány pomocí identifikátorù. Identifikátor je jakákoliv sekvence písmen, èíslic a znaku podtr¾ítko, pøièem¾ musí zaèínat písmenem nebo podtr¾ítkem. Dále jazyk obsahuje binární operátory, unární operátor negace a závorky. Jednotlivé formule jsou od sebe oddìleny støedníkem. Lexikální prvky jazyka jsou shrnuty v tabulce \ref{lexTable}. Stejnì jako C++ je i tento jazyk \textit{case-sensitive}.
+\begin{table}[h]
+ \begin{center}
+  \begin{small}
+  \begin{tabular}{|l|l|l|}\hline
+    Znaková reprezentace&Alternativní reprezentace&Sémantika\\\hline
+    \&&AND&konjunkce (binární operátor)\\
+    $\mid$&OR&disjunkce (binární perátor)\\
+    \begin{Large}\verb|^|\end{Large}&XOR&exclusive OR (binární perátor)\\
+    $\sim$&NOT&negace (unární perátor)\\
+    (~)&&závorky\\
+    0&FALSE&nepravda\\
+    1&TRUE&pravda\\
+    \verb|[a-zA-Z_][a-zA-Z0-9_]|&&identifikátor\\
+    ;&&støedník - oddìlovaè formulí\\\hline
+  \end{tabular} 
+  \end{small}
+ \end{center}
+ \caption{Lexikální prvky jazyka pro zápis výrokových formulí}
+ \label{lexTable}
+\end{table}
+
+\section{Interní reprezentace problému}
+Definice problému pomocí jazyka je vhodná pro u¾ivatele, ale není pøíli¹ vhodná pro zpracování genetickým algoritmem. Navíc operace vyhodnocení jednotlivých formulí je èasovì kritická èást výpoètu. Proto si program na základì vstupních dat vytváøí interní reprezentaci problému zalo¾enou na objektech C++.
+
+Diagram tøíd, které zaji¹»ují pøevod vstupních dat na interní reprezentaci, je zachycen na obr. \ref{parser}. Na tomto diagramu je znázornìno vyu¾ítí návrhového vzoru \textit{decorator}. Výsledkem zpracování vstupu je mno¾ina naètených názvù promìnných a mno¾ina naètených výrokových formulí. Tato data jsou ulo¾ena v kontejnerech \texttt{VariableContainer} a \texttt{FormulaContainer}.
+\begin{figure}[h]
+  \begin{center}\includegraphics[scale=0.5]{parser.png}\end{center}
+  \caption{Zpracování vstupních dat - objektový model}\label{parser}
+\end{figure}
+
+Naèítání problému ze vstupního souboru je pova¾ováno pouze za jednu z variant, jak problém definovat. Proto je interní reprezentace dat zcela oddìlena od algoritmù, které s nimy pracují. Toho je docíleno pomocí tzv. \textit{rozhraní}\footnote{Rozhranní (\textit{interface}) je z pohledu pøekladaèe C++ èistì abstraktní tøída (\textit{pure virtual}).}. Rozhraní \texttt{IFormulaEvaluator} pøedstavuje vyhodnotitelnou výrokovou formuli a rozhraní \texttt{ISatItem} její ohodnocení. Definici problému jako celek zpøístupòuje objekt \textit{SatProblem} (návrhový vzor \textit{Facade}). Situace je znázornìna na diagramu \ref{SatProblem}.
+\begin{figure}[h]
+  \begin{center}\includegraphics[scale=0.5]{SatProblem.png}\end{center}
+  \caption{Interní reprezentace SAT problému - objektový model}\label{SatProblem}
+\end{figure}
+
 
 \section{Abstrakce prohledávaèe}
-\begin{itemize}
- \item abstraktní solver, vy¹¹í abstrakce, rozhraní observery
- \item slepý prohledávaè
- \item GA prohledávaè - pouhé napojení na knihovnu GAlib
-\end{itemize}
+Jak bylo naznaèeno v úvodu, program umo¾òuje øe¹it daný SAT problém dvìma zpùsoby -- pomocí genetického algoritmu a pomocí slepého prohledávaèe. Abstraktní tøída \texttt{AbstractSatSolver} definuje spoleèné rozhraní pro oba prohledávaèe. Tuto tøídu lze také pou¾ít jako bázovou tøídu pro definici jakéhokoliv prohledávaèe, napø. pro vyu¾ití jiné knihovny ne¾ je \texttt{GAlib}.
+
+Definice spoleèného rozhraní je dùle¾itá pro spolupráci s \textit{observery}. Observery jsou objekty, které mohou sledovat aktuální stav prohledávaèe a nìjak reagovat na zmìny tohoto stavu -- napø. tím, ¾e vypisují informace o prùbìhu prohledávání, nebo vyhodnocují podmínky pro zastavení prohledávaèe.
+
+Tøída \texttt{AbstractSatSolver} proto implementuje nìkolik rozhraní, které mohou observery vyu¾ívat pøi práci s prohledávaèem. Nejdùle¾itìj¹í z nich je rozhraní \texttt{ISubject} na samém vrcholu hierarchie dìdiènosti, které umo¾òuje jednotlivé observery k prohledávaèi pøipojovat. Hierarchie dìdiènosti je znázornìna na obr. \ref{ASSinheritance}.
+\begin{figure}[h]
+  \begin{center}\includegraphics[scale=0.5]{ASSinheritance.png}\end{center}
+  \caption{Hierarchie dìdiènosti tøídy \texttt{AbstractSatSolver}}\label{ASSinheritance}
+\end{figure}
 
 \section{Observery}
-\begin{itemize}
- \item observery - seznam, úèel, jednoduchý pøíklad
-\end{itemize}
+Observery jsou navr¾eny tak, aby byly pokud mo¾no nezávislé na konkrétním typu prohledávaèe. Observery implementované v souèasné verzi aplikace se starají pouze o výpis potøebných informací do konzole a pøípadné ukonèení prohledávání pøi splìnní u¾ivatelem definovaných podmínek. Spolupráci prohledávaèe s observery znázoròuje znázoròuje diagram tøíd na obr. \ref{AbstractSatSolver}. Seznam jednotlivých observerù je uveden v tabulce \ref{tabObservers}.
+\begin{figure}[h]
+  \begin{center}\includegraphics[scale=0.5]{SatSolver.png}\end{center}
+  \caption{Spolupráce prohledávaèe s observery}\label{AbstractSatSolver}
+\end{figure}
+\begin{table}[h]
+ \begin{center}
+  \begin{small}
+  \begin{tabular}{|r|l|}\hline
+    Tøída&Chování\\\hline
+    \texttt{TimedStop}&Zastaví prohledávání po uplynutí pøedem daného èasu.\\
+    \texttt{SolutionsCountStop}&Zastaví prohledávání, pokud je nalezen po¾adovaný poèet øe¹ení.\\
+    \texttt{ProgressWatch}&Prùbì¾nì vypisuje informace o prùbìhu prohledávání.\\
+    \texttt{ResultsWatch}&Prùbì¾nì vypisuje nalezená øe¹ení.\\
+    \texttt{FitnessWatch}&Zobrazuje informace, pokud bylo nalezeno ohodnocení s vy¹¹í hodnotou \textit{fitness}.\\\hline
+  \end{tabular} 
+  \end{small}
+ \end{center}
+ \caption{Seznam observerù a jejich chování}
+ \label{tabObservers}
+\end{table}
+
+\section{Jednotlivé implementace prohledávaèe}
+Jak bylo zmínìno v úvodu, program poskytuje dvì implementace prohledávaèe, mezi kterými lze pøepínat -- slepý prohledávaè a prohledávaè vyu¾ívající genetický algoritmus. V tabulce \ref{tabAdvantages} jsou shrnuty výhody a nevýhody obou implementací. Tøídy implementující tyto prohledávaèe se jmenují \texttt{BlindSolver} a \texttt{GaSatSolver}.
+\begin{table}[h]
+ \begin{center}
+  \begin{scriptsize}
+  \begin{tabular}{|l|l|}\hline
+    Slepý prohledávaè&GA prohledávaè\\\hline
+    \texttt{+} doká¾e nalézt v¹echna existující øe¹ení&\texttt{-} není zaruèeno, ¾e najde v¹echna øe¹ení\\
+    \texttt{+} èas potøebný k prohledávání lze spoèítat pøedem&\texttt{-} nelze obecnì definovat podmínky zastavení\\
+    \texttt{-} vhodný pouze pro triviální problémy&\texttt{+} doká¾e øe¹it slo¾ité problémy na bì¾né arch.\\
+    \texttt{-} asymptotická èasová slo¾itost je exponenciální&\texttt{+} vìt¹inou nalezne øe¹ení velmi rychle, pokud existuje\\
+    \texttt{-} poèet promìnných je omezen architekturou poèítaèe&\texttt{-} pro urèité tøídy problémù je potøeba upravit øídící parametry\\\hline
+  \end{tabular} 
+  \end{scriptsize}
+ \end{center}
+ \caption{Srovnání výhod a nevýhod obou implementací prohledávaèù}
+ \label{tabAdvantages}
+\end{table}
+
+Implementace slepého prohledávaèe je velmi jednoduchá. Ohodnocení jednotlivých promìnných se ukládá jako celé èíslo. Tím je zaruèeno efektivní zpracování pomocí aritmetických a bitových operací nad tímto typem. Prohledávací smyèka provádí pouze inkrementaci tohoto èísla a vyhodnocení výrokových formulí. Tato implementace omezuje poèet výrokových promìnných pøibli¾nì na \texttt{sizeof(long)} dané architektury. To v¹ak v praxi pøíli¹ nevadí, proto¾e pro slo¾itìj¹í problémy je slepý prohledávaè stejnì nepou¾itelný.
+
+Tøída \texttt{GaSatSolver} funguje jako propojení knihovny \texttt{GAlib} se zbytkem programu. Na obr. \ref{GaSatSolver} je znázornìn graf spolupráce této tøídy. Tato tøída pouze implementuje rozhraní prohledávaèe pomocí tøíd knihovny \texttt{GAlib}. Pou¾ívá genetický algoritmus definovaný tøídou \texttt{GASimpleGA}. Bìhem experimentù byly porovnávány i jiné algoritmy - viz. kapitola \ref{results}. Pro pou¾ití jiného algoritmu staèí (díky kvalitnímu objektovému modelu knihovny \texttt{GAlib}) zmìnit jedinný øádek v programu\footnote{Nebyl by problém zmìnit program tak, aby bylo mo¾né jednotlivé genetické algoritmy pøepínat za bìhu. Experimenty v¹ak ukázaly, ¾e to samo o sobì nepøinese velký u¾itek.}.
+\begin{figure}[h]
+  \begin{center}\includegraphics[scale=0.5]{GaSatSolver.png}\end{center}
+  \caption{Graf spolupráce tøídy \texttt{GaSatSolver}}\label{GaSatSolver}
+\end{figure}
+
+Pro kódování chromozómu byla pou¾ita tøídy \texttt{GA1DBinaryStringGenome}, která kóduje jedince jako jednorozmìrné bitové øetìzece. K zji¹tìní hodnoty \textit{fitness} jedince je potøeba provést nad ním vyhodnocení v¹ech formulí -- je tedy potøeba tyto objekty \textit{obalit}, aby implementovali døíve definované rozhraní \texttt{ISatItem}. K tomu slou¾í tøídy \texttt{GaSatItem} a \texttt{SatItemGalibAdatper}, pøièem¾ druhá z nich pracuje pouze s odkazem na objekty knihovny \texttt{GAlib} (z dùvodu optimalizace). Plnohodnotná implementace je zase potøeba pro tvoøení kontejnerù (mno¾ina, vektor, ...).
+
+Nalezená øe¹ení jsou ukládána vnì knihovny \texttt{GAlib} pomocí kontejneru \textit{mno¾ina} -- tøídy \texttt{SatItemSet}. Tento kontejner zajistí, aby ka¾dé ohodnocení promìnných (nalezené øe¹ení) bylo v kontejneru právì jednou. Tím lze sledovat celkový poèet nalezených (navzájem rùzných) øe¹ení a nakonec je v¹echny vypsat.
 
 
 \chapter{Implementace}\label{implementation}
+TODO
+
+Pro jednodu¹¹í práci s observery byla vytvoøena C++ ¹ablona, která observer vytvoøí s po¾adovanými parametry a zároveò jej pøipojí ke sledovanému objektu:
+\begin{verbatim}
+// Create observer OBSERVER and attach it to subject
+template <
+    class OBSERVER,
+    class SUBJECT,
+    class ARG>
+inline OBSERVER* createAttached(SUBJECT *subject, ARG &arg) {
+  OBSERVER *observer= new OBSERVER(subject, arg);
+  subject->addObserver(observer);
+  return observer;
+}
+\end{verbatim}
+
+Samotný zápis kódu pøidávající jednotlivé observery pak vypadá mnohem pøehlednìji, pøièem¾ není nijak omezeno pùvodní rozhraní observeru. Lze tedy kombinovat oba dva zpùsoby pøipojení observeru:
+\begin{verbatim}
+// attach progress indicator
+const int progressBits = satProblem->getVarsCount()-stepWidth;
+if (progressBits > 0) {
+  progressWatch = new ProgressWatch(satSolver, 1<<progressBits, std::cout);
+  satSolver->addObserver(progressWatch);
+}
+
+// Display message if maxFitness is increased
+fitnessWatch = createAttached<FitnessWatch>(satSolver, std::cout);
+\end{verbatim} 
+
 
 \section{Sestavení a instalace}
 Pro úspì¹né sestavení je potøeba mít nainstalovanou knihovnu GLUT, knihovny OpenGL, CMake a podporovaný pøekladaè. Vlastní sestavení a instalace jsou velmi jednoduché a~pøí\-moèaré:
@@ -60,11 +176,6 @@ $ make install
 \end{verbatim} 
 
 \chapter{Výsledky}\label{results}
-
-\begin{figure}[h]
-  \begin{center}\includegraphics{img/room4.png}\end{center}
-  \caption{Scéna s vypoèítanou radiozitou -- originální obrázek naleznete na~\href{http://dudka.cz/rrv}{{\tt http://dudka.cz/rrv}}}\label{room4}
-\end{figure}
 
 \chapter{Závìr}
 
