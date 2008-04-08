@@ -9,6 +9,12 @@ IF(NOT DEBUG_MODE)
 	ADD_DEFINITIONS(-DNDEBUG)
 ENDIF(NOT DEBUG_MODE)
 
+# Check GAlib availability
+find_library(GALIB ga)
+IF(NOT EXISTS ${GALIB})
+  MESSAGE(FATAL_ERROR "Cannot find GAlib library")
+ENDIF(NOT EXISTS ${GALIB})
+
 # Check for C++ compiler flags
 INCLUDE(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG(-std=c++98 HAVE_STD)
