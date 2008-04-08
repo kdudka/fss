@@ -213,8 +213,48 @@ Nedílnou souèástí dokumentace je dokumentace API, kterou lze vygenerovat pomocí 
 
 
 \chapter{Výsledky}\label{results}
+Hlavní pøeká¾kou pøi testování programu byl nedostatek testovacích dat. Jinými slovy nepodaøilo se mi sehnat vhodné zadání SAT problému, na ktrém bych prohledávaè otestoval. Vytvoøil jsem si proto generátor náhodných SAT problémù -- program \texttt{fss-satgen}. Tento program je také souèástí archivu a je velmi jednoduchý. Jako parametr se mu zadá poèet výrokových promìnných a poèet formulí, které z nich má sestavit. Výstupem je mno¾ina náhodnì vygenerovaných výrokových formulí zapsaných v jazyku, kterému rozumí prohledávaè.
+
+Nevýhodou takového pøístupu je skuteènost, ¾e o vygenerovaném problému nemáme pøedem informaci o tom, jestli má nìjaké øe¹ení, popø. kolik má øe¹ení. Pro jednodu¹¹í problémy (obvykle max. 20 -- 30 výrokových promìnných) je mo¾né na problém pustit nejprve slepý prohledávaè. Výstupem slepého prohledávaèe je pøesná informace o poètu øe¹ení. Stejný problém potom mù¾eme pøedhodit GA prohledávaèi a porovnat èas, který potøebuje k jeho vyøe¹ení. Tohle byl hlavní smìr, kterým se testování ubíralo.
+
+Kromì klasického genetického algoritmu (tak jak jej implementuje \texttt{GAlib}) bylo implementováno automatické restartování bìhu GA v pøípadì, ¾e byly splnìny podmínky pro ukonèení bìhu a zároveò nebyl nalezen po¾adovaný poèet øe¹ení. Tohle nepatrné vylep¹ení se ukázalo jako velmi pøínosné pro sní¾ení èasu prohledávání.
+
+Bylo zji¹tìno, ¾e program nalezne po¾adovaný poèet øe¹ení mnohem rychleji, pokud má pøedem informaci o poètu øe¹ení. Takového chování dosáhneme specifikací paramterù \texttt{minslns} a \texttt{maxslns} (viz. obr. \ref{screenshot}). Horní ohranièení umo¾òuje zastavit GA pøi dosa¾ení daného poètu øe¹ení. Zatímco dolní ohranièení umo¾òuje restartovat bìh, pokud nevede k cíli. Tyto parametry se obecnì mohou li¹it.
+
+Co se týká klasických parametrù GA, výraznìj¹í zlep¹ení bylo dosa¾eno upravením velikosti populace pro nìkteré problémy. U problémù, které mìly hodnì øe¹ení, byla øe¹ení nalezena rychleji pøi nastavení men¹í velikosti populace. U jednoho testovaného problému, který mìl více ne¾ 12000 øe¹ení, se jako optimání hodnota ukázala velikost populace dokonce jenom 30 jedincù.
+
+Asi nejdùle¾itìj¹ím parametrem byl poèet generací jako ukonèovací kritérium bìhu. Kromì ukonèení po daném poètu generací je mo¾né ukonèit bìh podle konvergenèního kritéria tak, jak jej definuje \texttt{GAlib}. Nejzajímavìj¹í z pohledu u¾ivatele je asi ukonèení bìhu po uplynutí pøedem daného èasu. Tohle ukonèení lze kombinovat s ostatními kritérii a zaruèuje ukonèení výpoètu v u¾ivatelem stanoveném èase bez ohled na poèet nalezených øe¹ení.
+
+Program byl testován na rùzných SAT problémech rùzné slo¾itosti -- jak poèet promìnných, tak poèet formulí dosahovali øádu stovek. V tabulce \ref{tabTime} je nastínìna závislost èasu prohledávání na pou¾itých parametrech. Pro vytovøení této tabulky byl jako vstup pou¾it jednoduchý SAT problém s 20ti promìnnými a 20ti formulemi -- díky tomu bylo mo¾né pou¾ít slepý i GA prohledávaè.
+\begin{table}[h]
+ \begin{center}
+  \begin{small}
+  \begin{tabular}{|l|r|r|}\hline
+    Parametry prohledávání&Poèet nalezených øe¹ení&Doba prohledávání\\\hline
+    \textit{bez parametru}&3 -- 6&1.29 s\\
+    \texttt{ngen 500}&5 -- 6&2.58 s\\
+    \texttt{minslns 6}&6&1.29 -- 5.19 s\\
+    \texttt{minslns 6 maxslns 6}&6&0.60 -- 5.19 s\\
+    \texttt{minslns 6 maxslns 6 time 1000 maxruns 1}&0 -- 6&0.60 -- 1.01 s\\\hline
+    \texttt{blind 1}&6&116.07 s\\
+    \texttt{blind 1 maxslns 6}&6&92.03 s\\
+    \texttt{blind 1 maxtime 60000 stepw 10}&4&60.12 s\\\hline
+  \end{tabular} 
+  \end{small}
+ \end{center}
+ \caption{Závislost doby prohledávání na parametrech}
+ \label{tabTime}
+\end{table}
+
 
 \chapter{Závìr}
+\begin{itemize}
+ \item zajímavé výsledky
+ \item porovnání bì¾ného alg s GA
+ \item plnì funkèní aplikace pro øe¹ení SAT problému
+ \item osobní prínos - seznámení s GAlibem
+\end{itemize}
+
 
 % ----------------------------------------------
 % Pou¾itá literatura
