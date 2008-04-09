@@ -22,7 +22,7 @@ Citace z \cite{Kvas}:
 \begin{quote}
 Genetický algoritmus patøí mezi základní stochastické optimalizaèní algoritmy s výraznými evoluèními rysy. V souèasnosti je nejèastìji pou¾ívaným evoluèním optimalizaèním algoritmem, se ¹irokou paletou aplikací od optimalizace vysoce multimodálních funkcí pøes kombinatorické a grafovì-teoretické problémy a¾ po~aplikace nazývané \quotedblbase{umìlý ¾ivot\textquotedblleft}.
 
-Ukazuje se, ¾e na základì analogie s evoluèními procesy probíhajícími v biologických systémech existuje alternativní mo¾nost, jak usmìrnit náhodné generování bodù k hodnotám blízkým optimálním. Právì tato analogie se stala základem \textit{genetického algoritmu}, který vylep¹uje èistý stochastický slepý algoritmus tak, ¾e poskytuje v reálném èase optimální øe¹ení.
+Ukazuje se, ¾e na základì analogie s evoluèními procesy probíhajícími v biologických systémech existuje alternativní mo¾nost, jak usmìrnit náhodné gene\-rování bodù k hodnotám blízkým optimálním. Právì tato analogie se stala základem \textit{genetického algoritmu}, který vylep¹uje èistý stochastický slepý algoritmus tak, ¾e poskytuje v reálném èase optimální øe¹ení.
 
 Darwinova teorie evoluce se zakládá na tezi \textit{pøirozeného výbìru}, podle které pøe¾ívají jen nejlépe pøizpùsobení jedinci populace. \textit{Reprodukcí} dvou jedincù s~vysokým \textit{fitness} dostáváme potomky, kteøí budou s vysokou pravdìpodobností dobøe pøizpùsobení na úspì¹né pøe¾ití. Pøi podrobné analýze (hlavnì matematické) se ukazuje, ¾e samotné pùsobení reprodukce není dostateènì efektivní na vznik dobøe pøizpùsobených jedincù s novými vlastnostmi, které významnì ulehèují pøe¾ití. Do evoluce ¾ivé hmoty je nutné zapojit i tzv. \textit{mutace}. Tyto mutace ovlivòují náhodným zpùsobem (kladnì nebo zápornì) genetický materiál populace jedincù.
 
@@ -171,7 +171,7 @@ Tøída \texttt{GaSatSolver} funguje jako propojení knihovny \texttt{GAlib} se zby
   \caption{Graf spolupráce tøídy \texttt{GaSatSolver}}\label{GaSatSolver}
 \end{figure}
 
-Pro kódování chromozómu byla pou¾ita tøída \texttt{GA1DBinaryStringGenome}, která kóduje jedince jako jednorozmìrné bitové øetìzce. K zji¹tìní hodnoty \textit{fitness} jedince je potøeba provést nad ním vyhodnocení v¹ech formulí -- je tedy potøeba tyto objekty \textit{obalit}, aby implementovali døíve definované rozhraní \texttt{ISatItem}. K tomu slou¾í tøídy \texttt{GaSatItem} a~\texttt{SatItem\-GalibAdatper}, pøièem¾ druhá z nich pracuje pouze s odkazem na objekty knihovny \texttt{GAlib} (z~dùvodu optimalizace). Plnohodnotná implementace je zase potøeba pro tvoøení kontejnerù (mno¾ina, vektor, ...).
+Pro kódování chromozómu byla pou¾ita tøída \texttt{GA1DBinaryStringGenome}, která kóduje jedince jako jednorozmìrné bitové øetìzce. K zji¹tìní hodnoty \textit{fitness} jedince je potøeba provést nad ním vyhodnocení v¹ech formulí -- je tedy potøeba tyto objekty \textit{obalit}, aby implementovali døíve definované rozhraní \texttt{ISatItem}. K tomu slou¾í tøídy \texttt{GaSatItem} a~\texttt{SatItem\-GalibAdatper}, pøièem¾ druhá z nich pracuje pouze s odkazem na objekty knihovny \texttt{GAlib} (z~dùvodu optimalizace). Plnohodnotná implementace je zase potøeba pro tvoøení kontej\-nerù (mno¾ina, vektor, ...).
 
 Hodnota \textit{fitness} se poèítá podle následujícího vztahu:
 \begin{displaymath}
