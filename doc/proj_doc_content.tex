@@ -173,6 +173,12 @@ Tøída \texttt{GaSatSolver} funguje jako propojení knihovny \texttt{GAlib} se zby
 
 Pro kódování chromozómu byla pou¾ita tøída \texttt{GA1DBinaryStringGenome}, která kóduje jedince jako jednorozmìrné bitové øetìzce. K zji¹tìní hodnoty \textit{fitness} jedince je potøeba provést nad ním vyhodnocení v¹ech formulí -- je tedy potøeba tyto objekty \textit{obalit}, aby implementovali døíve definované rozhraní \texttt{ISatItem}. K tomu slou¾í tøídy \texttt{GaSatItem} a~\texttt{SatItem\-GalibAdatper}, pøièem¾ druhá z nich pracuje pouze s odkazem na objekty knihovny \texttt{GAlib} (z~dùvodu optimalizace). Plnohodnotná implementace je zase potøeba pro tvoøení kontejnerù (mno¾ina, vektor, ...).
 
+Hodnota \textit{fitness} se poèítá podle následujícího vztahu.
+\begin{displaymath}
+fitness=\frac{satisfied~formula~count}{total~formula~count}
+\end{displaymath}
+Hodnota tedy le¾í v intervalu $\langle0,1\rangle$. $0$ znamená, ¾e není splnìna ani jedna formule, $1$ znamená, ¾e jsou splnìny v¹echny formule (nalezeno øe¹ení).
+
 Nalezená øe¹ení jsou ukládána vnì knihovny \texttt{GAlib} pomocí kontejneru \textit{mno¾ina} -- tøídy \texttt{SatItemSet}. Tento kontejner zajistí, aby ka¾dé ohodnocení promìnných (nalezené øe¹ení) bylo v kontejneru právì jednou. Tím lze sledovat celkový poèet nalezených (navzájem rùzných) øe¹ení a nakonec je v¹echny vypsat.
 
 
