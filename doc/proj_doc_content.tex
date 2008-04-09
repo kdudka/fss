@@ -173,7 +173,7 @@ Tøída \texttt{GaSatSolver} funguje jako propojení knihovny \texttt{GAlib} se zby
 
 Pro kódování chromozómu byla pou¾ita tøída \texttt{GA1DBinaryStringGenome}, která kóduje jedince jako jednorozmìrné bitové øetìzce. K zji¹tìní hodnoty \textit{fitness} jedince je potøeba provést nad ním vyhodnocení v¹ech formulí -- je tedy potøeba tyto objekty \textit{obalit}, aby implementovali døíve definované rozhraní \texttt{ISatItem}. K tomu slou¾í tøídy \texttt{GaSatItem} a~\texttt{SatItem\-GalibAdatper}, pøièem¾ druhá z nich pracuje pouze s odkazem na objekty knihovny \texttt{GAlib} (z~dùvodu optimalizace). Plnohodnotná implementace je zase potøeba pro tvoøení kontejnerù (mno¾ina, vektor, ...).
 
-Hodnota \textit{fitness} se poèítá podle následujícího vztahu.
+Hodnota \textit{fitness} se poèítá podle následujícího vztahu:
 \begin{displaymath}
 fitness=\frac{satisfied~formula~count}{total~formula~count}
 \end{displaymath}
