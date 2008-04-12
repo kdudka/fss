@@ -1,0 +1,105 @@
+\documentclass{beamer}
+%\usepackage{beamerfoils}
+\mode<presentation>
+{
+  \usetheme{Darmstadt}
+}
+%\usepackage[czech]{babel}
+%\usepackage[latin2]{inputenc}
+\usepackage{ucs}
+\usepackage[utf8x]{inputenc}
+\usepackage[czech]{babel}
+\usepackage{times}
+\usepackage[T1]{fontenc}
+\usepackage{xspace}
+
+\title[]{Fast SAT Solver}
+\author[]{Kamil Dudka}
+\institute[]{Fakulta informačních technologií\\Vysoké učení technické v Brně}
+\begin{document}
+
+% Title frame
+\begin{frame}
+  \frametitle{Fast SAT Solver}
+%   \titlepage
+  \begin{center}
+    \vbox{FAKULTA INFORMAČNÍCH TECHNOLOGIÍ\\\vspace{.2cm}VYSOKÉ UČENÍ TECHNICKÉ V BRNĚ\\\vspace{1cm}}
+    \includegraphics[width=2cm,keepaspectratio]{cls/fit-zp2}
+    \vfill
+    \vbox{Autor práce\hfill Kamil Dudka}\vspace{.3cm}\vbox{Vedoucí práce\hfill Ing. Jiří Jaroš}
+  \end{center}
+\end{frame}
+
+\section{SAT Problém}
+\begin{frame}
+  \frametitle{SAT Problém}
+%   \begin{itemize}
+%    \item Efektivní způsob komunikace mezi aplikacemi\\
+%    {\tiny Sdílená paměť je vhodná zejména pro zpracování větších bloků dat.}
+%    \bigskip\item Nízká podpora v jazyce C++ a operačních systémech
+%    \bigskip\item Knihovna umožňující sdílet přímo objekty jazyka C++
+%   \end{itemize}
+
+\end{frame}
+
+\section{Návrh}
+\begin{frame}
+  \frametitle{Návrh}
+%   \begin{enumerate}
+%    \item Bázová třída pro sdílené objekty
+%   \begin{figure}[h]
+%     \includegraphics[scale=0.4]{img/SharedObject_SI.png}
+%     \hspace{1.5cm}
+%     \includegraphics[scale=0.4]{img/SharedObject_MI.png}
+%   \end{figure}
+%   \bigskip\item Ukazatel na sdílený objekt
+%   \item Singleton \texttt{ShareManager}
+%   \end{enumerate}
+\end{frame}
+% \begin{frame}
+%   \frametitle{2. Ukazatel na sdílený objekt}
+%   \includegraphics[scale=0.4]{img/RelocPtr.png}
+% \end{frame}
+% \begin{frame}
+%   \frametitle{3. Singleton \texttt{ShareManager}}
+%   \includegraphics[scale=0.4]{img/ShareManagerSimple.png}
+% \end{frame}
+
+% \section{Příklad}
+% \begin{frame}[containsverbatim]
+%   \frametitle{Příklad - sdílený kontejner objektů}
+%   \includegraphics[scale=0.3]{img/PointVectorDeclaration.png}
+%   \vfill
+% \end{frame}
+
+\section{Výsledky}
+\begin{frame}
+  \frametitle{Výsledky}
+%   \begin{itemize}
+%    \item Testování knihovny\\
+%    {\tiny (testovací programy dodávané spolu s knihovnou)}
+%    
+%    \bigskip\item Výkon při práci s knihovnou\\
+%    {\tiny Při použití sdílené paměti byl výkon testovací aplikace asi \textbf{3-5x nižší} než výkon její nesdílené varianty.}
+%    
+%    \bigskip\item Omezení knihovny\\
+%    {\tiny Ve sdílených objektech nelze používat \textbf{virtuální metody}.}
+%   \end{itemize}
+
+\end{frame}
+
+% \section{Budoucnost knihovny}
+% \begin{frame}
+%   \frametitle{Budoucnost knihovny}
+%   \begin{itemize}
+%    \item Testování na reálných aplikacích
+%    \bigskip\item Alokace a dealokace bloků uvnitř sdíleného segmentu\\
+%    {\tiny (garbage collector)}
+%    \bigskip\item Synchronizační prostředky pro sdílená data\\
+%    {\tiny (implementace monitoru)}
+%   \end{itemize}
+% 
+% \end{frame}
+
+\end{document}
+
