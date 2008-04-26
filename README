@@ -1,0 +1,30 @@
+    Fast SAT Solver
+
+================================================================================
+
+    Web:
+        http://dudka.cz/fss
+
+    Author:
+        Kamil Dudka     (xdudka00@gmail.com)
+
+    License:
+        GNU General Public License
+
+    Date:
+        2008-04-26
+
+================================================================================
+
+    Directory structure:
+        ./doc/          project documentation (in czech language)
+        ./doc/api/      API documentation
+        ./src           source codes
+
+    API documentation build instructions:
+        You can make API documentation by command 'make' in directory
+        ./doc/api (requires Doxygen).
+
+    Build instructions:
+        cmake .         (creates Makefile)
+        make            (build programs)
