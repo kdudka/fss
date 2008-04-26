@@ -21,7 +21,6 @@
 % Title frame
 \begin{frame}
   \frametitle{Fast SAT Solver}
-%   \titlepage
   \begin{center}
     \vbox{FAKULTA INFORMAČNÍCH TECHNOLOGIÍ\\\vspace{.2cm}VYSOKÉ UČENÍ TECHNICKÉ V BRNĚ\\\vspace{1cm}}
     \includegraphics[width=2cm,keepaspectratio]{cls/fit-zp2}
@@ -30,51 +29,72 @@
   \end{center}
 \end{frame}
 
-\section{SAT Problém}
-\begin{frame}
-  \frametitle{SAT Problém}
-%   \begin{itemize}
-%    \item Efektivní způsob komunikace mezi aplikacemi\\
-%    {\tiny Sdílená paměť je vhodná zejména pro zpracování větších bloků dat.}
-%    \bigskip\item Nízká podpora v jazyce C++ a operačních systémech
-%    \bigskip\item Knihovna umožňující sdílet přímo objekty jazyka C++
-%   \end{itemize}
-
+\section{SAT Problem}
+\begin{frame}[fragile]
+  \frametitle{SAT Problem}
+  \begin{itemize}
+   \item SATisfiability Problem
+   \begin{displaymath}
+    \begin{array}{l}
+     \neg(\neg x_1 \vee x_2)\vee x_3 \wedge\neg(\neg x_1 \Leftrightarrow x_3)\\
+     \neg(x_1 \wedge x_2 \wedge x_3)
+    \end{array}
+   \end{displaymath}
+   \smallskip
+   \item Jazyk pro zápis formulí
+   \begin{verbatim}
+          ~(~x1|x2)|x3&(~x1 XOR x3);
+          ~(x1 & x2 & x3);
+   \end{verbatim}
+   \smallskip
+   \item Nezávislá interní reprezentace
+  \end{itemize}
 \end{frame}
 
-\section{Návrh}
+\section{SAT Solver}
 \begin{frame}
-  \frametitle{Návrh}
-%   \begin{enumerate}
-%    \item Bázová třída pro sdílené objekty
-%   \begin{figure}[h]
-%     \includegraphics[scale=0.4]{img/SharedObject_SI.png}
-%     \hspace{1.5cm}
-%     \includegraphics[scale=0.4]{img/SharedObject_MI.png}
-%   \end{figure}
-%   \bigskip\item Ukazatel na sdílený objekt
-%   \item Singleton \texttt{ShareManager}
-%   \end{enumerate}
+  \frametitle{SAT Solver}
+  \includegraphics[scale=0.45]{AbstractSatSolver.png}
 \end{frame}
-% \begin{frame}
-%   \frametitle{2. Ukazatel na sdílený objekt}
-%   \includegraphics[scale=0.4]{img/RelocPtr.png}
-% \end{frame}
-% \begin{frame}
-%   \frametitle{3. Singleton \texttt{ShareManager}}
-%   \includegraphics[scale=0.4]{img/ShareManagerSimple.png}
-% \end{frame}
-
-% \section{Příklad}
-% \begin{frame}[containsverbatim]
-%   \frametitle{Příklad - sdílený kontejner objektů}
-%   \includegraphics[scale=0.3]{img/PointVectorDeclaration.png}
-%   \vfill
-% \end{frame}
+\begin{frame}
+  \frametitle{SAT Solver - pokračování}
+  \begin{itemize}
+   \item Automatický restart
+   \medskip\item Najde řešení rchleji, pokud zná předem jejich počet
+   \medskip\item Lze nastavit maximální čas prohledávání
+  \end{itemize}
+  \begin{flushright}
+    \includegraphics[scale=0.2]{screenshot.png}
+  \end{flushright}
+\end{frame}
 
 \section{Výsledky}
 \begin{frame}
   \frametitle{Výsledky}
+  \begin{itemize}
+   \item Generátor náhodných SAT problémů
+   \item Srovnání GA a slepého prohledávače
+   \item Řídící parametry GA
+   \bigskip\item Srovnání pro 20 výrokových formulí o 20ti proměnných
+    \begin{table}[h]
+    \begin{center}
+      \begin{tiny}
+      \begin{tabular}{|l|r|r|}\hline
+        Parametry prohledávání&Počet nalezených řešení&Doba prohledávání\\\hline
+        \textit{bez parametru}&3 -- 6&1.29 s\\
+        \texttt{ngen 500}&5 -- 6&2.58 s\\
+        \texttt{minslns 6}&6&1.29 -- 5.19 s\\
+        \texttt{minslns 6 maxslns 6}&6&0.60 -- 5.19 s\\
+        \texttt{minslns 6 maxslns 6 time 1000 maxruns 1}&0 -- 6&0.60 -- 1.01 s\\\hline
+        \texttt{blind 1}&6&116.07 s\\
+        \texttt{blind 1 maxslns 6}&6&92.03 s\\
+        \texttt{blind 1 maxtime 60000 stepw 10}&4&60.12 s\\\hline
+      \end{tabular} 
+      \end{tiny}
+    \end{center}
+    \label{tabTime}
+    \end{table}
+  \end{itemize}
 %   \begin{itemize}
 %    \item Testování knihovny\\
 %    {\tiny (testovací programy dodávané spolu s knihovnou)}
