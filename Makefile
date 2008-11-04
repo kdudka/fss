@@ -15,14 +15,46 @@
 # You should have received a copy of the GNU General Public License
 # along with fss.  If not, see <http://www.gnu.org/licenses/>.
 
-.PHONY: all build_dir clean
+WGET?=wget
+TAR?=tar
+ZIP?=zip
+
+FSS_GALIB_BUNDLE=fss-galib
+FSS_GALIB_BUNDLE_ZIP=$(FSS_GALIB_BUNDLE).zip
+
+GALIB_DIR=galib247
+GALIB_TGZ=$(GALIB_DIR).tgz
+GALIB_URL="http://lancet.mit.edu/ga/dist/$(GALIB_TGZ)"
+GALIB_LIB=$(GALIB_DIR)/ga/libga.a
+
+.PHONY: all build_dir clean distclean galib galib_src $(FSS_GALIB_BUNDLE_ZIP)
 
 all: build_dir
 	$(MAKE) all -C build
 
-build_dir:
+build_dir: $(GALIB_LIB)
 	test -d build || mkdir build
-	cd build && cmake ../src
+	cd build && cmake -D GALIB_DIR=../$(GALIB_DIR) ../src
+
+$(GALIB_LIB): galib
+galib: galib_src
+	$(MAKE) lib -C $(GALIB_DIR)
+
+galib_src: $(GALIB_TGZ)
+	$(TAR) xzvf $(GALIB_TGZ)
+
+$(GALIB_TGZ):
+	$(WGET) $(GALIB_URL)
 
 clean:
 	rm -rfv build
+
+distclean: clean
+	rm -rfv $(GALIB_DIR) $(GALIB_TGZ)
+	rm -rfv $(FSS_GALIB_BUNDLE) $(FSS_GALIB_BUNDLE_ZIP)
+
+$(FSS_GALIB_BUNDLE_ZIP): distclean
+	$(MAKE) galib_src
+	mkdir $(FSS_GALIB_BUNDLE)
+	cp -Rv COPYING doc $(GALIB_DIR) Makefile README src $(FSS_GALIB_BUNDLE)
+	$(ZIP) -r $@ $(FSS_GALIB_BUNDLE)

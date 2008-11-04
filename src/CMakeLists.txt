@@ -28,7 +28,7 @@ IF(NOT DEBUG_MODE)
 ENDIF(NOT DEBUG_MODE)
 
 # Check GAlib availability
-find_library(GALIB ga)
+find_library(GALIB ga ${GALIB_DIR}/ga)
 IF(NOT EXISTS ${GALIB})
   MESSAGE(FATAL_ERROR "Cannot find GAlib library")
 ENDIF(NOT EXISTS ${GALIB})
@@ -46,7 +46,7 @@ ENDIF(HAVE_PEDANTIC)
 CHECK_CXX_COMPILER_FLAG(-O3 HAVE_O3)
 
 # Set C++ compiler flags
-SET(CMAKE_CXX_FLAGS "${STD_FLAG} ${PEDANTIC_FLAG} ${DEBUG_FLAG}" CACHE STRING "C++ compiler flags" FORCE)
+SET(CMAKE_CXX_FLAGS "${STD_FLAG} ${PEDANTIC_FLAG} ${DEBUG_FLAG} -I${GALIB_DIR}" CACHE STRING "C++ compiler flags" FORCE)
 
 # Executable binary rrv-visualize
 ADD_EXECUTABLE(fss
@@ -54,7 +54,7 @@ ADD_EXECUTABLE(fss
   SatProblem.cpp Scanner.cpp Formula.cpp
   SatSolver.cpp SatSolverObserver.cpp
   BlindSatSolver.cpp GaSatSolver.cpp)
-TARGET_LINK_LIBRARIES(fss ga)
+TARGET_LINK_LIBRARIES(fss ${GALIB})
 
 ADD_EXECUTABLE(fss-satgen fss-satgen.cpp)
 
