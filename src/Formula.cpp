@@ -200,7 +200,7 @@ namespace FastSatSolver {
   Cmd* Cmd::fromToken(Token token) {
     switch (token.m_token) {
       case T_FALSE:       return new CmdConstant(false);
-      case T_TRUE:        return new CmdConstant(false);
+      case T_TRUE:        return new CmdConstant(true);
       case T_VARIABLE:    return new CmdVariable(token.m_ext_number);
       case T_NOT:         return new CmdUnaryNot;
       case T_AND:
