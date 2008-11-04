@@ -21,4 +21,4 @@ $(PPT).pdf:
 	pdflatex $(PPT)
 
 clean:
-	rm -f *.dvi *.log *.blg *.bbl *.toc *.aux *.out *.nav *.snm #$(PDF)
+	rm -f *.dvi *.log *.blg *.bbl *.toc *.aux *.out *.nav *.snm *.vrb #$(PDF)

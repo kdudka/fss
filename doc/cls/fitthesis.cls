@@ -82,8 +82,8 @@ Práce je chránìna autorským zákonem a její u¾ití bez udìlení opráv\-nìní autorem
 %Vyber typu projektu
 \newcommand{\set@project}[1]{%
  \naselfalse
- \ifEqString{#1}{BP}{Projekt do pøedmìtu EVO}{\@projecttype@CS}%
- \ifEqString{#1}{BP}{Project for course EVO}{\@projecttype@EN}%
+ \ifEqString{#1}{BP}{Projekt do pøedmìtu SFC}{\@projecttype@CS}%
+ \ifEqString{#1}{BP}{Project for course SFC}{\@projecttype@EN}%
  \ifEqString{#1}{DP}{Diplomová práce}{\@projecttype@CS}%
  \ifEqString{#1}{DP}{Master's thesis}{\@projecttype@EN}%
  \ifnasel
@@ -367,7 +367,7 @@ Práce je chránìna autorským zákonem a její u¾ití bez udìlení opráv\-nìní autorem
 
 \newpage\fontfamily{\familydefault}\selectfont%
 %=================================================================================
-\maketask
+% \maketask
 % \makelicence
 % \clearpage
 % \setcounter{tocdepth}{2}\setcounter{page}{1}
