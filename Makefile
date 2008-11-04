@@ -27,7 +27,7 @@ GALIB_TGZ=$(GALIB_DIR).tgz
 GALIB_URL="http://lancet.mit.edu/ga/dist/$(GALIB_TGZ)"
 GALIB_LIB=$(GALIB_DIR)/ga/libga.a
 
-.PHONY: all build_dir clean distclean galib galib_src $(FSS_GALIB_BUNDLE_ZIP)
+.PHONY: all build_dir clean distclean galib $(FSS_GALIB_BUNDLE_ZIP)
 
 all: build_dir
 	$(MAKE) all -C build
@@ -37,14 +37,12 @@ build_dir: $(GALIB_LIB)
 	cd build && cmake -D GALIB_DIR=../$(GALIB_DIR) ../src
 
 $(GALIB_LIB): galib
-galib: galib_src
+galib: $(GALIB_DIR)
 	$(MAKE) lib -C $(GALIB_DIR)
 
-galib_src: $(GALIB_TGZ)
+$(GALIB_DIR):
+	test -f $(GALIB_TGZ) || $(WGET) $(GALIB_URL)
 	$(TAR) xzvf $(GALIB_TGZ)
-
-$(GALIB_TGZ):
-	$(WGET) $(GALIB_URL)
 
 clean:
 	rm -rfv build
@@ -54,7 +52,7 @@ distclean: clean
 	rm -rfv $(FSS_GALIB_BUNDLE) $(FSS_GALIB_BUNDLE_ZIP)
 
 $(FSS_GALIB_BUNDLE_ZIP): distclean
-	$(MAKE) galib_src
+	$(MAKE) $(GALIB_DIR)
 	mkdir $(FSS_GALIB_BUNDLE)
 	cp -Rv COPYING doc $(GALIB_DIR) Makefile README src $(FSS_GALIB_BUNDLE)
 	$(ZIP) -r $@ $(FSS_GALIB_BUNDLE)
