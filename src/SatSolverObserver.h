@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2008 Kamil Dudka <xdudka00@stud.fit.vutbr.cz>
+ *
+ * This file is part of fss (Fast SAT Solver).
+ *
+ * fss is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * fss is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with fss.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef SATSOLVEROBSERVER_H
 #define SATSOLVEROBSERVER_H
 
@@ -6,7 +25,7 @@
  * @brief Set of useful observers attachable to AbstractSatSolver or its base
  * classes.
  * @author Kamil Dudka <xdudka00@gmail.com>
- * @date 2008-03-16
+ * @date 2008-11-05
  * @ingroup SatSolver
  */
 
