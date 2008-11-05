@@ -1,30 +1,54 @@
-    Fast SAT Solver
+fss (Fast SAT Solver)
+=====================
+    By Kamil Dudka <xdudka00@stud.fit.vutbr.cz>, 2008
 
-================================================================================
+This archive contains source codes of fss (Fast SAT Solver) bundled with source
+codes of GAlib (A C++ Library of Genetic Algorithm Components). You can download
+up-to-date fss source codes from http://dudka.cz/fss, GAlib sources from
+http://lancet.mit.edu/ga
 
-    Web:
-        http://dudka.cz/fss
+The software for this work used the GAlib genetic algorithm package, written by
+Matthew Wall at the Massachusetts Institute of Technology.
 
-    Author:
-        Kamil Dudka     (xdudka00@gmail.com)
 
-    License:
-        GNU General Public License
+License
+-------
+fss is covered by GPL v3+ license, see COPYING file for more details. GAlib is
+licensed under terms of MIT license, see LICENSE file in the GAlib directory for
+more details. 
 
-    Date:
-        2008-04-26
 
-================================================================================
+Build
+-----
+Build system CMake (http://www.cmake.org/) is required for successful build.
+Just type 'make' to build GAlib, compile fss and link against GAlib. On
+successful build, binaries will be in directory 'build'. For now only GNU/Linux
+is supported, but source codes are intended to be portable. For Gentoo Linux an
+ebuild is available on project web page http://dudka.cz/fss
 
-    Directory structure:
-        ./doc/          project documentation (in czech language)
-        ./doc/api/      API documentation
-        ./src           source codes
+Built executables:
+./build/fss             fss executable
+./build/fss-satgen      random SAT problem generator (see documentation)
 
-    API documentation build instructions:
-        You can make API documentation by command 'make' in directory
-        ./doc/api (requires Doxygen).
 
-    Build instructions:
-        cmake .         (creates Makefile)
-        make            (build programs)
+Documentation
+-------------
+Project documentation (in Czech language only) is in 'doc/proj_doc.pdf', full
+LaTeX sources are included. You can also generate API documentation (in English
+language) using Doxygen (http://www.stack.nl/~dimitri/doxygen/). To do so, go to
+doc/api directory and run 'make'. Both documentations are available on the
+project web page http://dudka.cz/fss
+
+
+Archive content
+---------------
+./COPYING               GPL v3 license
+./data                  example of fss input/output
+./doc                   documentation
+./doc/api               API documentation template
+./doc/proj_doc.pdf      built project documentation (in Czech language only)
+./galib247              GAlib sources
+./galib247/LICENSE      GAlib license
+./Makefile              root Makefile
+./src                   fss sources
+
