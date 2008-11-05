@@ -15,6 +15,8 @@ Tato práce se zabývá øe¹ením SAT problému pomocí tzv. \textit{genetického algori
 
 Vytvoøený program doká¾e zadaný SAT problém øe¹it jak pomocí genetického algoritmu, tak pomocí bì¾ného \textit{(slepého)} algoritmu. V závìru práce jsou tyto pøístupy porovnány na rùzných instancích SAT problému. Kompletní zdrojové kódy a programovou dokumentaci je mo¾né stáhnout z \href{http://dudka.cz/fss}{{\tt http://dudka.cz/fss}}.
 
+\section{Podìkování}
+Software pou¾itý v této práci pou¾ívá knihovnu genetických algoritmù \texttt{GAlib}, kterou napsal Matthew Wall z Massachusetts Institute of Technology.
 
 \chapter{Teoretická èást}\label{theory}
 \section{Genetický algoritmus}
@@ -216,14 +218,12 @@ Program je implementovaný v jazyce C++, vìt¹inu jeho modulù lze kompilovat bez e
 \end{table}
 
 
-\section{Sestavení a spu¹tìní}
-Pro úspì¹né sestavení celé aplikace je potøeba mít nainstalovanou knihovnu \texttt{GAlib}. Program pou¾ívá automatický \textit{build-systém} \texttt{CMake}, který nalezne potøebnou knihovnu v systému, detekuje závislosti mezi moduly apod. Sestavení aplikace ze zdrojových kódù je velmi jednoduché:
-\begin{verbatim}
-$ cmake .
-$ make
-\end{verbatim}
+\section{Sestavení ze zdrojových kódù}
+Z webu projektu \href{http://dudka.cz/fss}{http://dudka.cz/fss} lze stáhnout archiv obsahující zdrojové kódy projektu spolu se zdrojovými kódy knihovny \texttt{GAlib}. Souèástí archivu je \texttt{Makefile}, který zajistí sestavení knihovny \texttt{GAlib}, pøelo¾ení zdrojového kódu aplikace a jeho slinkování s~knihovnou.
 
-Nedílnou souèástí dokumentace je dokumentace API, kterou lze vygenerovat pomocí programu \texttt{Doxygen} -- v¹e potøebné je v adresáøi \texttt{doc/api}. Tuto dokumentaci lze také, stejnì jako zdrojové kódy, stáhnout z webu projektu \href{http://dudka.cz/fss}{http://dudka.cz/fss}. Na obrázku \ref{screenshot} je ukázka pou¾ití programu.
+Program pou¾ívá automatický \textit{build-systém} \texttt{CMake}, který detekuje závislosti mezi moduly, závislosti na systémové knihovny, pøekladaè apod. Pro distribuci Gentoo Linux lze na webu projektu stáhnout \textit{ebuild}, který zajistí automatické sta¾ení, sestavení a instalaci vèetnì v¹ech závislostí.
+
+Nedílnou souèástí dokumentace je dokumentace API, kterou lze vygenerovat pomocí programu \texttt{Doxygen} -- v¹e potøebné je v adresáøi \texttt{doc/api}. Tuto dokumentaci lze také, stejnì jako zdrojové kódy, najít na webu projektu. Na obrázku \ref{screenshot} je ukázka pou¾ití programu.
 \begin{figure}[h]
   \begin{center}\includegraphics[scale=0.5]{screenshot.png}\end{center}
   \caption{Ukázka pou¾ití programu}\label{screenshot}

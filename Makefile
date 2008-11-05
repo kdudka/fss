@@ -46,6 +46,7 @@ $(GALIB_DIR):
 
 clean:
 	rm -rfv build
+	$(MAKE) clean -C doc
 
 distclean: clean
 	rm -rfv $(GALIB_DIR) $(GALIB_TGZ)
