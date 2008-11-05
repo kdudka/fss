@@ -15,7 +15,7 @@ License
 -------
 fss is covered by GPL v3+ license, see COPYING file for more details. GAlib is
 licensed under terms of MIT license, see LICENSE file in the GAlib directory for
-more details. 
+more details.
 
 
 Build
@@ -43,7 +43,7 @@ project web page http://dudka.cz/fss
 Archive content
 ---------------
 ./COPYING               GPL v3 license
-./data                  example of fss input/output
+./data                  examples of fss input/output
 ./doc                   documentation
 ./doc/api               API documentation template
 ./doc/proj_doc.pdf      built project documentation (in Czech language only)
@@ -51,4 +51,3 @@ Archive content
 ./galib247/LICENSE      GAlib license
 ./Makefile              root Makefile
 ./src                   fss sources
-
